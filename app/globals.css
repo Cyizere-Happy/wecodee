@@ -1,26 +1,149 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-paper: #ffffff;
+  --color-ink: #251e1c;
+  --color-muted: #635a56;
+  --color-signal: #bd3041;
+  --color-rule: #e8dfdb;
+  --color-blush: #faefeb;
+  --color-sand: #f8f5f1;
+
+  --font-sans: "Atkinson Hyperlegible Next Variable", ui-sans-serif, system-ui, sans-serif;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@media (prefers-color-scheme: dark) {
+:root {
+  color-scheme: light;
+  --gutter: clamp(24px, 8.5vw, 144px);
+}
+
+@media (max-width: 639px) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --gutter: 24px;
   }
 }
 
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  overflow-x: clip;
+}
+
+::selection {
+  background: var(--color-signal);
+  color: #ffffff;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-signal);
+  outline-offset: 4px;
+}
+
+.shell {
+  width: 100%;
+  max-width: calc(1040px + var(--gutter) * 2);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.section-spacing {
+  padding-block: clamp(52px, 7vw, 100px);
+}
+
+.section-heading {
+  font-size: clamp(2rem, 3.6vw, 3rem);
+  font-weight: 680;
+  letter-spacing: -0.025em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+
+.section-copy {
+  max-width: 40ch;
+  font-size: clamp(1rem, 0.9375rem + 0.3vw, 1.125rem);
+  line-height: 1.5;
+  color: var(--color-muted);
+}
+
+/*
+ * Mascot clips were rendered on a soft gray studio sweep. A gentle lift pushes
+ * that sweep to pure white, and a radial mask dissolves the vignette, so each
+ * clip reads as an illustration printed on the page rather than a player.
+ */
+.mascot {
+  /* Soft on every side: a horizontal and a vertical fade, intersected, plus
+     a radial falloff that swallows the studio vignette in the corners. */
+  --fade-x: linear-gradient(
+    to right,
+    transparent 0%,
+    #000 12%,
+    #000 88%,
+    transparent 100%
+  );
+  --fade-y: linear-gradient(
+    to bottom,
+    transparent 0%,
+    #000 10%,
+    #000 90%,
+    transparent 100%
+  );
+  --fade-r: radial-gradient(
+    ellipse 62% 64% at 50% 50%,
+    #000 78%,
+    transparent 100%
+  );
+  -webkit-mask-image: var(--fade-x), var(--fade-y), var(--fade-r);
+  -webkit-mask-composite: source-in, source-in;
+  mask-image: var(--fade-x), var(--fade-y), var(--fade-r);
+  mask-composite: intersect;
+}
+
+.mascot > video,
+.mascot > img {
+  filter: brightness(1.08) contrast(1.14);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Masked word reveal: each word rides up from behind its own clipping line */
+.mask-word {
+  display: inline-block;
+  overflow: clip;
+  overflow-clip-margin: 0.04em;
+  vertical-align: top;
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+
+.mask-word > span {
+  display: inline-block;
+  will-change: transform;
+}
+
+/* Elements GSAP will reveal start hidden only when JS is ready */
+.js [data-reveal] {
+  visibility: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .js [data-reveal] {
+    visibility: visible;
+  }
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }
