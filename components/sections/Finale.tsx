@@ -26,7 +26,7 @@ export function Finale() {
       if (prefersReducedMotion()) return;
       const q = gsap.utils.selector(root);
 
-      // The plane lands beside the headline after it leaves the clip.
+      // The plane continues across the illustration after it leaves the clip.
       timeline.current = gsap
         .timeline({ paused: true })
         .fromTo(
@@ -52,16 +52,15 @@ export function Finale() {
       className="relative scroll-mt-20 overflow-x-clip pb-16 md:pb-24"
     >
       <div className="shell">
-        <div className="grid items-center gap-7 border-y border-rule py-7 md:grid-cols-12 md:gap-x-8 md:py-6">
-          <figure className="order-2 md:order-1 md:col-span-7">
+        <div className="grid items-center gap-y-8 border-y border-rule py-7 md:grid-cols-12 md:gap-x-media-gap md:py-6">
+          <figure className="relative order-2 overflow-hidden md:order-1 md:col-span-7">
             <MascotVideo clip={clips.launch} threshold={0.5} onStart={onStart} />
-          </figure>
-
-          <div className="relative order-1 md:order-2 md:col-span-5">
-            <span data-finale-plane className="absolute -top-5 right-0 hidden w-9 lg:block">
+            <span data-finale-plane className="absolute top-4 right-4 hidden w-9 lg:block">
               <PaperPlane />
             </span>
+          </figure>
 
+          <div className="order-1 md:order-2 md:col-span-5">
             <h2 id="finale-title" className="section-heading max-w-[13ch]">
               Make something yours.
             </h2>

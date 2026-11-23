@@ -45,10 +45,11 @@ export function Hero() {
       aria-labelledby="hero-title"
       className="relative pt-28 pb-10 md:pt-32 md:pb-14 lg:pt-36"
     >
-      <div className="shell grid items-center gap-9 md:grid-cols-12 md:gap-x-8 lg:gap-x-12">
+      <div className="shell grid items-center gap-y-9 md:grid-cols-12 md:gap-x-media-gap">
         <div className="md:col-span-6 lg:col-span-5">
           <Headline
             as="h1"
+            accentPeriod
             id="hero-title"
             className="max-w-[11ch] text-[clamp(2.625rem,5.2vw,4.25rem)] leading-[0.98] font-bold tracking-[-0.04em] text-balance"
           >

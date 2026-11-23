@@ -41,7 +41,7 @@ export function MilestonePath() {
   );
 
   return (
-    <div ref={root} className="grid gap-y-6 md:grid-cols-12">
+    <div ref={root} className="grid gap-y-8 md:grid-cols-12 md:gap-x-media-gap">
       <div className="md:col-span-7">
         <div className="md:sticky md:top-28">
           <figure>

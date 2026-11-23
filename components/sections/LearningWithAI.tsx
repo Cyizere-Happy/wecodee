@@ -55,7 +55,7 @@ export function LearningWithAI() {
       className="section-spacing scroll-mt-12"
     >
       <div className="shell">
-        <div className="grid items-center gap-y-6 md:grid-cols-12">
+        <div className="grid items-center gap-y-8 md:grid-cols-12 md:gap-x-media-gap">
           <div className="md:col-span-5">
             <Headline
               id="ai-title"

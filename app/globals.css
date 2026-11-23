@@ -9,6 +9,7 @@
   --color-blush: #faefeb;
   --color-sand: #f8f5f1;
 
+  --spacing-media-gap: clamp(2rem, 5vw, 4rem);
   --font-sans: "Atkinson Hyperlegible Next Variable", ui-sans-serif, system-ui, sans-serif;
 
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);

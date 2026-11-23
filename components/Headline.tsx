@@ -3,6 +3,7 @@ import type { ElementType } from "react";
 type Props = {
   children: string;
   as?: ElementType;
+  accentPeriod?: boolean;
   className?: string;
   id?: string;
 };
@@ -14,10 +15,12 @@ type Props = {
 export function Headline({
   children,
   as: Tag = "h2",
+  accentPeriod = false,
   className = "",
   id,
 }: Props) {
-  const words = children.split(" ");
+  const hasAccent = accentPeriod && children.endsWith(".");
+  const words = (hasAccent ? children.slice(0, -1) : children).split(" ");
 
   return (
     <Tag id={id} aria-label={children} data-reveal className={className}>
@@ -25,7 +28,12 @@ export function Headline({
         {words.map((word, i) => (
           <span key={i}>
             <span className="mask-word">
-              <span data-word>{word}</span>
+              <span data-word>
+                {word}
+                {hasAccent && i === words.length - 1 && (
+                  <span className="text-signal">.</span>
+                )}
+              </span>
             </span>
             {i < words.length - 1 && " "}
           </span>

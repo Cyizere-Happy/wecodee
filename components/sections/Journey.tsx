@@ -41,7 +41,7 @@ export function Journey() {
       className="section-spacing scroll-mt-12"
     >
       <div className="shell">
-        <div className="grid gap-y-4 md:grid-cols-12 md:items-end">
+        <div className="grid gap-y-4 md:grid-cols-12 md:items-end md:gap-x-media-gap">
           <Headline
             id="journey-title"
             className="section-heading md:col-span-7"

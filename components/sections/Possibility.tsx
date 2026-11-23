@@ -46,7 +46,7 @@ export function Possibility() {
       aria-labelledby="possibility-title"
       className="section-spacing scroll-mt-12"
     >
-      <div className="shell grid items-center gap-y-7 md:grid-cols-12">
+      <div className="shell grid items-center gap-y-8 md:grid-cols-12 md:gap-x-media-gap">
         <figure
           data-possibility-figure
           className="order-2 md:order-1 md:col-span-7"
