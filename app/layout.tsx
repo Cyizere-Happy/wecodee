@@ -3,7 +3,7 @@ import "@fontsource-variable/atkinson-hyperlegible-next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "WeCodee — Big ideas start small.",
+  title: "wecodee.",
   description:
     "A little world for big ideas. WeCodee guides students from their first idea to building and presenting real software, one milestone at a time.",
   openGraph: {
