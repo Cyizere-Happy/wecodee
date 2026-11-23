@@ -7,9 +7,9 @@ export function Footer() {
   const year = 2026;
 
   return (
-    <footer className="border-t border-rule py-8 md:py-10">
+    <footer className="pb-8 md:pb-10">
       <div className="shell">
-        <div className="flex flex-wrap items-center justify-between gap-x-10 gap-y-5">
+        <div className="flex flex-wrap items-center justify-between gap-x-10 gap-y-5 border-t border-rule pt-8 md:pt-10">
           <Logo size={30} />
           <nav aria-label="Footer">
             <ul className="flex flex-wrap gap-x-5 gap-y-3">

@@ -82,7 +82,7 @@ export function MilestonePath() {
               </span>
 
               <div data-row-reveal>
-                <h3 className="text-xl leading-tight font-semibold">{m.title}</h3>
+                <h3 className="text-lg leading-tight font-semibold">{m.title}</h3>
                 <p className="mt-1 text-base text-muted">{m.artifact}</p>
               </div>
             </li>

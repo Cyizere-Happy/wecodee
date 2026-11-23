@@ -58,7 +58,7 @@ export function Nav() {
             <li key={l.href}>
               <Link
                 href={l.href}
-                className="text-[15px] font-medium text-muted transition-colors hover:text-signal"
+                className="text-sm font-medium text-muted transition-colors hover:text-signal"
               >
                 {l.label}
               </Link>
@@ -106,7 +106,7 @@ export function Nav() {
               <Link
                 href={l.href}
                 onClick={() => setOpen(false)}
-                className="block py-4 text-2xl font-semibold text-ink hover:text-signal"
+                className="block py-4 text-xl font-semibold text-ink hover:text-signal"
               >
                 {l.label}
               </Link>

@@ -50,7 +50,7 @@ export function Hero() {
           <Headline
             as="h1"
             id="hero-title"
-            className="max-w-[11ch] text-[clamp(2.875rem,5.6vw,4.75rem)] leading-[0.98] font-bold tracking-[-0.04em] text-balance"
+            className="max-w-[11ch] text-[clamp(2.625rem,5.2vw,4.25rem)] leading-[0.98] font-bold tracking-[-0.04em] text-balance"
           >
             Big ideas start small.
           </Headline>

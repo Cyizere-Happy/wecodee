@@ -106,7 +106,7 @@ export function PromptDeck() {
         aria-labelledby={`${baseId}-tab-${active}`}
         className="grid bg-sand p-5 sm:p-7 md:p-8"
       >
-        <p className="min-h-[4.35em] max-w-[43ch] text-[clamp(1.125rem,2vw,1.375rem)] leading-[1.45]">
+        <p className="min-h-[4.35em] max-w-[43ch] text-[clamp(1.0625rem,1.8vw,1.25rem)] leading-[1.45]">
           <PromptText text={prompts[active].text} />
         </p>
         <button
