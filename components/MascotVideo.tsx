@@ -11,20 +11,22 @@ type Props = {
   priority?: boolean;
   /** Share of the clip that must be visible before it plays. */
   threshold?: number;
+  /** Play once from beginning to end, even if the frame scrolls out of view. */
+  playThrough?: boolean;
   /** Called once, the first time playback actually starts (or immediately for reduced motion). */
   onStart?: () => void;
 };
 
 /**
  * A mascot animation treated as a living illustration rather than a player:
- * no controls, cropped to its action, dissolved into the white page, replayed
- * from the start each time it scrolls into view, resting on its final frame.
+ * no controls, cropped to its action, and dissolved into the white page.
  */
 export function MascotVideo({
   clip,
   className = "",
   priority = false,
   threshold = 0.5,
+  playThrough = false,
   onStart,
 }: Props) {
   const frameRef = useRef<HTMLDivElement>(null);
@@ -49,6 +51,7 @@ export function MascotVideo({
     if (!frame || !video) return;
 
     let firstPlay = true;
+    let disposed = false;
 
     // Warm the file shortly before it is needed, never all at once.
     const warm = new IntersectionObserver(
@@ -56,30 +59,39 @@ export function MascotVideo({
         if (!entry.isIntersecting) return;
         if (video.preload !== "auto") {
           video.preload = "auto";
-          video.load();
+          if (!playThrough) video.load();
         }
         warm.disconnect();
       },
       { rootMargin: "400px 0px" },
     );
 
-    // Every entrance replays the scene from the top; leaving pauses it so
-    // off-screen clips never decode in the background.
     const play = new IntersectionObserver(
       ([entry]) => {
         if (!entry.isIntersecting) {
-          video.pause();
+          if (!playThrough) video.pause();
           return;
         }
-        video.currentTime = 0;
+
+        if (playThrough) {
+          if (entry.intersectionRatio < threshold) return;
+          play.disconnect();
+          warm.disconnect();
+        } else {
+          video.currentTime = 0;
+        }
+
+        video.muted = true;
         video
           .play()
           .then(() => {
-            if (firstPlay) onStartRef.current?.();
+            if (!disposed && firstPlay) onStartRef.current?.();
             firstPlay = false;
           })
           .catch((err: DOMException) => {
-            if (err.name !== "AbortError") setFallback(true);
+            if (!disposed && (playThrough || err.name !== "AbortError")) {
+              setFallback(true);
+            }
           });
       },
       { threshold },
@@ -88,10 +100,11 @@ export function MascotVideo({
     warm.observe(frame);
     play.observe(frame);
     return () => {
+      disposed = true;
       warm.disconnect();
       play.disconnect();
     };
-  }, [staticFrame, threshold]);
+  }, [staticFrame, threshold, playThrough]);
 
   const { x, y, w, h } = clip.crop;
   const frameStyle: CSSProperties = { aspectRatio: `${(w * 16) / (h * 9)}` };
@@ -123,6 +136,7 @@ export function MascotVideo({
       ) : (
         <video
           ref={videoRef}
+          src={clip.src}
           className="absolute max-w-none object-cover"
           style={mediaStyle}
           poster={clip.posterStart}
@@ -131,11 +145,10 @@ export function MascotVideo({
           disablePictureInPicture
           disableRemotePlayback
           preload={priority ? "auto" : "none"}
+          onError={() => setFallback(true)}
           aria-hidden
           tabIndex={-1}
-        >
-          <source src={clip.src} type="video/mp4" />
-        </video>
+        />
       )}
     </div>
   );

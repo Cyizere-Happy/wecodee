@@ -1,64 +1,46 @@
-"use client";
-
-import { useRef } from "react";
-import { gsap, useGSAP, prefersReducedMotion } from "@/lib/gsap";
-import { Headline } from "../Headline";
-import { MilestonePath } from "../MilestonePath";
+import { clips } from "@/lib/media";
+import { milestonePhases } from "@/lib/milestones";
+import { MascotVideo } from "../MascotVideo";
 
 export function Journey() {
-  const root = useRef<HTMLElement>(null);
-
-  useGSAP(
-    () => {
-      if (prefersReducedMotion()) return;
-      const q = gsap.utils.selector(root);
-
-      // Precise: crisp power curves and tight, even staggers.
-      const tl = gsap.timeline({
-        defaults: { ease: "power4.out" },
-        scrollTrigger: { trigger: root.current, start: "top 68%", once: true },
-      });
-      tl.set(q("[data-reveal]"), { autoAlpha: 1 })
-        .from(
-          q("h2 [data-word]"),
-          { yPercent: 115, duration: 0.85, stagger: 0.05 },
-          0,
-        )
-        .from(
-          q("[data-journey-intro]"),
-          { autoAlpha: 0, y: 14, duration: 1 },
-          "<0.4",
-        );
-    },
-    { scope: root },
-  );
-
   return (
     <section
-      ref={root}
       id="journey"
       aria-labelledby="journey-title"
       className="section-spacing scroll-mt-12"
     >
       <div className="shell">
-        <div className="grid gap-y-4 md:grid-cols-12 md:items-end md:gap-x-media-gap">
-          <Headline
-            id="journey-title"
-            className="section-heading md:col-span-7"
-          >
-            From idea to demo day
-          </Headline>
-          <p
-            data-journey-intro
-            className="section-copy md:col-span-5 md:col-start-8"
-          >
-            Eight guided milestones take you from defining the problem to
-            presenting a working project.
-          </p>
-        </div>
+        <h2 id="journey-title" className="section-heading">
+          From idea to demo day
+        </h2>
+        <p className="section-copy mt-4">
+          Eight guided milestones take you from defining the problem to
+          presenting a working project.
+        </p>
 
-        <div className="mt-8 md:mt-14">
-          <MilestonePath />
+        <div className="mt-7 grid gap-y-8 lg:mt-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] lg:gap-x-media-gap">
+          <figure className="mx-auto w-full max-w-xl lg:sticky lg:top-28 lg:self-start">
+            <MascotVideo clip={clips.path} threshold={0.15} playThrough />
+          </figure>
+
+          <div className="space-y-7">
+            {milestonePhases.map(({ title, milestones }) => (
+              <div key={title}>
+                <h3 className="text-lg font-semibold text-signal">{title}</h3>
+                <ol role="list" className="mt-3 grid gap-3 sm:grid-cols-2">
+                  {milestones.map(({ title, artifact }) => (
+                    <li
+                      key={title}
+                      className="rounded-xl border border-rule bg-sand/60 px-4 py-3"
+                    >
+                      <h4 className="text-lg leading-tight font-semibold">{title}</h4>
+                      <p className="mt-1 text-base text-muted">{artifact}</p>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>
