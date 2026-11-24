@@ -6,6 +6,52 @@ import { clips } from "@/lib/media";
 import { milestonePhases } from "@/lib/milestones";
 import { MascotVideo } from "../MascotVideo";
 
+function JourneyOverview() {
+  return (
+    <svg
+      role="img"
+      aria-label="Plan, then build, then share"
+      viewBox="0 0 280 60"
+      width="280"
+      height="60"
+      className="mx-auto mt-1 block h-auto w-full max-w-[17.5rem] text-ink sm:mt-2"
+    >
+      <g
+        className="text-signal"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <g transform="translate(32 5)">
+          <path d="M5 2h9l5 5v15H5z M14 2v5h5 M8 11h8 M8 15h8 M8 19h5" />
+        </g>
+        <g transform="translate(128 5)">
+          <path d="m7 7-5 5 5 5 M17 7l5 5-5 5 M14 4l-4 16" />
+        </g>
+        <g transform="translate(224 5)">
+          <path d="m2 10 20-8-6 20-5-8-9-4Z M22 2 11 14" />
+        </g>
+      </g>
+      <path
+        d="M85 17h14m-4-4 4 4-4 4 M181 17h14m-4-4 4 4-4 4"
+        className="text-muted"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <g fill="currentColor" fontSize="15" fontWeight="600" textAnchor="middle">
+        <text x="44" y="48">Plan</text>
+        <text x="140" y="48">Build</text>
+        <text x="236" y="48">Share</text>
+      </g>
+    </svg>
+  );
+}
+
 export function Journey() {
   const root = useRef<HTMLElement>(null);
 
@@ -47,6 +93,8 @@ export function Journey() {
         <figure className="mx-auto mt-6 w-full max-w-2xl sm:mt-8">
           <MascotVideo clip={clips.path} threshold={0.15} playThrough />
         </figure>
+
+        <JourneyOverview />
 
         <div className="mt-7 space-y-9 sm:mt-9 md:space-y-11">
           {milestonePhases.map(({ title, milestones }) => (
