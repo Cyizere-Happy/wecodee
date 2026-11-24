@@ -1,5 +1,6 @@
 export const milestonePhases = [
   {
+    label: "Plan",
     title: "Plan the project",
     milestones: [
       {
@@ -25,7 +26,8 @@ export const milestonePhases = [
     ],
   },
   {
-    title: "Build and share",
+    label: "Build",
+    title: "Build and test",
     milestones: [
       {
         title: "Build the software",
@@ -37,6 +39,12 @@ export const milestonePhases = [
         description: "Try common tasks and unusual inputs. Record what breaks and check your fixes.",
         artifact: "A test plan and results",
       },
+    ],
+  },
+  {
+    label: "Share",
+    title: "Publish and present",
+    milestones: [
       {
         title: "Publish the project",
         description: "Put your project online so someone else can open it and try it.",
@@ -49,4 +57,4 @@ export const milestonePhases = [
       },
     ],
   },
-];
+] as const;
