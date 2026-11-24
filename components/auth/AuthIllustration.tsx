@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { AuthText } from "./AuthText";
 
 const stillQuery = "(prefers-reduced-motion: reduce), (max-width: 767px)";
 function subscribe(listener: () => void) {
@@ -19,10 +20,11 @@ type Props = {
   title?: string;
   caption?: string;
   compact?: boolean;
+  accentPeriod?: boolean;
 };
 
 export function AuthIllustration({
-  video, poster, still, description, position, crop, title, caption, compact = false,
+  video, poster, still, description, position, crop, title, caption, compact = false, accentPeriod,
 }: Props) {
   const media = useRef<HTMLVideoElement>(null);
   const [failed, fail] = useState(false);
@@ -95,8 +97,8 @@ export function AuthIllustration({
       </div>
       {title && (
         <figcaption>
-          <p>{title}</p>
-          {caption && <span>{caption}</span>}
+          <p><AuthText accentPeriod={accentPeriod}>{title}</AuthText></p>
+          {caption && <span><AuthText accentPeriod={accentPeriod}>{caption}</AuthText></span>}
         </figcaption>
       )}
     </figure>

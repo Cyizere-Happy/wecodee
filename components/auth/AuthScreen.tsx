@@ -6,6 +6,7 @@ import { authMedia, illustration } from "@/lib/auth-media";
 import { authRequest, signInDestination } from "@/lib/auth-request";
 import { AuthField, AuthSubmit } from "./AuthFields";
 import { AuthIllustration } from "./AuthIllustration";
+import { AuthText } from "./AuthText";
 import { AuthLink } from "./AuthLink";
 import { AuthNotice, StatusPage, type StatusCode } from "./StatusPage";
 
@@ -53,11 +54,17 @@ function subscribeToLink(listener: () => void) {
   return () => window.removeEventListener("hashchange", listener);
 }
 
-function Intro({ title, lead }: { title: string; lead: string }) {
+function Intro({ title, lead, accentPeriod }: {
+  title: string;
+  lead: string;
+  accentPeriod?: boolean;
+}) {
   return (
     <>
-      <h1 id="auth-title" className="auth-heading"><span>{title}</span></h1>
-      <p className="auth-lead">{lead}</p>
+      <h1 id="auth-title" className="auth-heading">
+        <span><AuthText accentPeriod={accentPeriod}>{title}</AuthText></span>
+      </h1>
+      <p className="auth-lead"><AuthText accentPeriod={accentPeriod}>{lead}</AuthText></p>
     </>
   );
 }
@@ -323,10 +330,11 @@ export function AuthScreen({ mode, token: queryToken = "" }: { mode: Mode; token
   if (mode === "verify") return null;
 
   const content = copy[mode];
+  const accentPeriod = mode === "login" || mode === "signup";
   return (
     <section className="auth-grid" aria-labelledby="auth-title">
       <div className="auth-content">
-        <Intro title={content.title} lead={content.lead} />
+        <Intro title={content.title} lead={content.lead} accentPeriod={accentPeriod} />
         <form className="auth-form" onSubmit={submit} noValidate>
           {mode === "signup" && (
             <div className="auth-name-row">
@@ -363,7 +371,12 @@ export function AuthScreen({ mode, token: queryToken = "" }: { mode: Mode; token
             : <AuthLink href="/login" className="auth-link">Back to sign in</AuthLink>}
         </p>
       </div>
-      <AuthIllustration {...authMedia[mode]} title={content.art} caption={content.caption} />
+      <AuthIllustration
+        {...authMedia[mode]}
+        title={content.art}
+        caption={content.caption}
+        accentPeriod={accentPeriod}
+      />
     </section>
   );
 }

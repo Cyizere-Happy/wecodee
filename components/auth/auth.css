@@ -66,6 +66,8 @@
   animation: auth-heading 390ms cubic-bezier(.2,.7,.25,1) both;
 }
 
+.auth-period { color: var(--auth-red); }
+
 .auth-lead {
   max-width: 42ch;
   margin-top: 10px;
@@ -252,7 +254,7 @@
   font-weight: 650;
   letter-spacing: -.035em;
 }
-.auth-scene figcaption span {
+.auth-scene figcaption > span {
   display: block;
   margin-top: 4px;
   font-size: .8125rem;
@@ -267,12 +269,12 @@
 }
 
 .auth-centered .auth-lead { margin-inline: auto; }
-.auth-centered .auth-scene { width: min(180px, 64%); margin: 0 auto 13px; }
+.auth-centered .auth-scene { width: min(300px, 88%); margin: 0 auto 13px; }
 .auth-centered .auth-primary,
 .auth-centered .auth-secondary { margin-top: 24px; }
 .auth-centered .auth-form .auth-primary { margin-top: 0; }
 .auth-centered .auth-form { text-align: left; }
-.auth-scene-compact { max-width: 280px; }
+.auth-scene-compact { max-width: 352px; }
 .auth-code {
   display: block;
   margin-bottom: 13px;
@@ -304,7 +306,7 @@
   .auth-main { align-items: start; padding-block: 22px; }
   .auth-grid { grid-template-columns: minmax(0, 360px); gap: 25px; }
   .auth-grid .auth-scene { max-width: 232px; }
-  .auth-grid .auth-scene-compact { max-width: 168px; }
+  .auth-grid .auth-scene-compact { max-width: 232px; }
   .auth-form { gap: 14px; margin-top: 20px; }
   .auth-field input { font-size: 1rem; }
   .auth-centered { align-self: center; }
