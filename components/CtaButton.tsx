@@ -51,7 +51,7 @@ export function CtaButton({
   return (
     <Link
       href={href}
-      className={`inline-flex items-center rounded-lg bg-ink font-semibold text-white transition-colors hover:bg-signal ${pad} ${className}`}
+      className={`inline-flex items-center rounded-surface bg-ink font-semibold text-white transition-colors hover:bg-signal ${pad} ${className}`}
     >
       <span>{children}</span>
       <Arrow />

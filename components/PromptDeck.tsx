@@ -63,7 +63,7 @@ export function PromptDeck() {
   };
 
   return (
-    <div className="grid overflow-hidden rounded-2xl border border-rule md:grid-cols-[minmax(12rem,1fr)_2.4fr]">
+    <div className="grid overflow-hidden rounded-surface border border-rule md:grid-cols-[minmax(12rem,1fr)_2.4fr]">
       <div
         role="tablist"
         aria-label="Guided prompts"
@@ -90,7 +90,7 @@ export function PromptDeck() {
               aria-controls={`${baseId}-panel`}
               tabIndex={on ? 0 : -1}
               onClick={() => select(i)}
-              className={`w-full rounded-lg px-3 py-2.5 text-left text-base font-semibold transition-colors focus-visible:outline-offset-0 ${
+              className={`w-full rounded-surface px-3 py-2.5 text-left text-base font-semibold transition-colors focus-visible:outline-offset-0 ${
                 on ? "bg-blush text-signal" : "text-ink hover:bg-sand"
               }`}
             >
@@ -112,7 +112,7 @@ export function PromptDeck() {
         <button
           type="button"
           onClick={copy}
-          className="mt-5 min-h-10 justify-self-start rounded-lg border border-rule bg-white px-4 text-sm font-semibold text-ink transition-colors hover:border-signal hover:text-signal"
+          className="mt-5 min-h-10 justify-self-start rounded-surface border border-rule bg-white px-4 text-sm font-semibold text-ink transition-colors hover:border-signal hover:text-signal"
         >
           {copied ? "Copied" : "Copy prompt"}
         </button>

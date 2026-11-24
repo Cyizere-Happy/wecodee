@@ -3,7 +3,7 @@
 import { useCallback, useRef } from "react";
 import { gsap, useGSAP, prefersReducedMotion } from "@/lib/gsap";
 import { clips } from "@/lib/media";
-import { START_HREF } from "@/lib/links";
+import { START_HREF, START_LABEL } from "@/lib/links";
 import { MascotVideo } from "../MascotVideo";
 import { CtaButton } from "../CtaButton";
 
@@ -66,7 +66,7 @@ export function Finale() {
             </h2>
 
             <div className="mt-6">
-              <CtaButton href={START_HREF}>Start building</CtaButton>
+              <CtaButton href={START_HREF}>{START_LABEL}</CtaButton>
             </div>
           </div>
         </div>

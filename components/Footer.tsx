@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Logo } from "./Logo";
 import { navLinks } from "./navLinks";
-import { START_HREF } from "@/lib/links";
+import { START_HREF, START_LABEL } from "@/lib/links";
 
 export function Footer() {
   const year = 2026;
@@ -13,7 +13,7 @@ export function Footer() {
           <Logo size={30} />
           <nav aria-label="Footer">
             <ul className="flex flex-wrap gap-x-5 gap-y-3">
-              {[...navLinks, { href: START_HREF, label: "Start building" }].map((l) => (
+              {[...navLinks, { href: START_HREF, label: START_LABEL }].map((l) => (
                 <li key={l.label}>
                   <Link
                     href={l.href}

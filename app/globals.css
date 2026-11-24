@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+@theme {
+  --radius-surface: 0.75rem;
+}
+
 @theme inline {
   --color-paper: #ffffff;
   --color-ink: #251e1c;

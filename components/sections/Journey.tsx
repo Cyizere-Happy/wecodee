@@ -153,7 +153,7 @@ export function Journey() {
                   aria-controls={baseId + "-panel-" + index}
                   tabIndex={active === index ? 0 : -1}
                   onClick={() => setActive(index)}
-                  className="inline-flex min-h-11 items-center rounded-full border border-rule px-4 text-sm font-semibold text-ink transition-colors hover:border-signal hover:text-signal aria-selected:border-ink aria-selected:bg-ink aria-selected:text-white sm:px-6"
+                  className="inline-flex min-h-11 items-center rounded-surface border border-rule px-4 text-sm font-semibold text-ink transition-colors hover:border-signal hover:text-signal aria-selected:border-ink aria-selected:bg-ink aria-selected:text-white sm:px-6"
                 >
                   {label}
                 </button>
@@ -165,7 +165,7 @@ export function Journey() {
                 aria-label="Previous stage"
                 disabled={active === 0}
                 onClick={() => setActive(active - 1)}
-                className="grid size-11 place-items-center rounded-full border border-rule text-ink transition-colors enabled:hover:border-signal enabled:hover:text-signal disabled:opacity-35"
+                className="grid size-11 place-items-center rounded-surface border border-rule text-ink transition-colors enabled:hover:border-signal enabled:hover:text-signal disabled:opacity-35"
               >
                 <PhaseArrow direction="previous" />
               </button>
@@ -174,7 +174,7 @@ export function Journey() {
                 aria-label="Next stage"
                 disabled={active === lastPhase}
                 onClick={() => setActive(active + 1)}
-                className="grid size-11 place-items-center rounded-full border border-rule text-ink transition-colors enabled:hover:border-signal enabled:hover:text-signal disabled:opacity-35"
+                className="grid size-11 place-items-center rounded-surface border border-rule text-ink transition-colors enabled:hover:border-signal enabled:hover:text-signal disabled:opacity-35"
               >
                 <PhaseArrow direction="next" />
               </button>
@@ -189,7 +189,7 @@ export function Journey() {
               aria-labelledby={baseId + "-tab-" + index}
               hidden={active !== index}
               tabIndex={0}
-              className="overflow-hidden rounded-2xl border border-rule bg-paper shadow-xs"
+              className="overflow-hidden rounded-surface border border-rule bg-paper shadow-xs"
             >
               <h3 className="border-b border-rule bg-sand/60 px-5 py-4 text-2xl font-semibold sm:px-7 sm:py-5">
                 {title}

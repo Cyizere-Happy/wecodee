@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import { gsap, useGSAP, prefersReducedMotion } from "@/lib/gsap";
 import { clips } from "@/lib/media";
-import { START_HREF } from "@/lib/links";
+import { START_HREF, START_LABEL } from "@/lib/links";
 import { Headline } from "../Headline";
 import { MascotVideo } from "../MascotVideo";
 import { CtaButton } from "../CtaButton";
@@ -43,7 +43,7 @@ export function Hero() {
       ref={root}
       id="top"
       aria-labelledby="hero-title"
-      className="relative pt-28 pb-10 md:pt-32 md:pb-14 lg:pt-36"
+      className="relative grid min-h-svh items-center pt-32 pb-14 md:pt-36 md:pb-18"
     >
       <div className="shell grid items-center gap-y-9 md:grid-cols-12 md:gap-x-media-gap">
         <div className="md:col-span-6 lg:col-span-5">
@@ -62,7 +62,7 @@ export function Hero() {
             </p>
             <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 md:mt-8">
               <CtaButton href={START_HREF}>
-                Start building
+                {START_LABEL}
               </CtaButton>
               <CtaButton href="#explore" variant="secondary">
                 See how it works
