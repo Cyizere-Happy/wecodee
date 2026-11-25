@@ -21,6 +21,42 @@ Verification links expire after one hour. Reset links expire after 30 minutes an
 
 [Better Auth email and password guide](https://better-auth.com/docs/authentication/email-password) · [Better Auth SQLite adapter](https://better-auth.com/docs/adapters/sqlite)
 
+## Workspace
+
+The signed-in dashboards follow `WeCodee_SRS.docx` (§2.2 user roles). Each role has its own route:
+
+| Route | Who | What's there |
+| --- | --- | --- |
+| `/learner` | Learners, including team leaders | Overview, Hot Topics, articles, live events, the skills quiz, team, daily reports, the 8-milestone project, portfolio and certificates. Team leaders get their tools (group link, roles, report tracking, inactive flags) on `/learner/team`. |
+| `/supervisor` | Supervisors (and admins) | Queues, the review queue with checklist reviews, and supervised teams with report grids. |
+| `/admin` | Admins | Reports and CSV exports, users and roles, team formation, certificates, Hot Topics, articles, quiz bank, milestone templates, events, platform settings and the audit log. |
+| `/notifications`, `/settings` | Everyone signed in | Shown inside the viewer's own dashboard. Supervisors and admins see account settings only. |
+| `/verify`, `/verify/[code]`, `/u/[username]` | Anyone, no sign-in | Certificate check (FR-51) and public portfolios (FR-78). Private portfolios answer like unknown ones. |
+
+Sign-in lands on `/workspace`, which sends each person to their dashboard. Old `/workspace/...` links redirect to the new routes. Visitors who aren't signed in keep the public site.
+
+The pages live in `app/(dashboard)/`. Each dashboard's layout (`components/workspace/RoleGate.tsx`) sends anyone outside its roles to their own dashboard, and each Server Action in `lib/workspace/actions.ts` checks the role again. A learner's WhatsApp number is shown only to their team leader and supervisor. Check-question answers never reach the browser.
+
+### Roles
+
+Accounts get a `role` field (`learner` by default; users can't set it themselves). Emails listed in `WECODEE_ADMIN_EMAILS` (comma-separated) are treated as admins. Role edits under Admin › Users affect sample records only.
+
+### Sample data and the backend boundary
+
+The learning backend (Hot Topics, teams, projects, reports and so on) isn't built yet. `lib/workspace/data.ts` is the single integration point: `loadWorkspace()` returns the viewer plus the workspace data, and reports `source: "sample"` while it serves the in-memory sample adapter in `lib/workspace/sample/`. The sample state is kept per viewer in server memory and resets when the server restarts. A strip at the top of every page says so and offers a **Reset** button.
+
+To connect a real backend, implement the same `WorkspaceData` shape in `loadWorkspace()` and replace the sample mutations in `actions.ts`. Pure SRS rules (readiness, quiz levels, team formation, hours, CSV) are in `lib/workspace/rules.ts`. Persistent learning records, email delivery, scheduled reminders, file storage, web push and Background Sync are still pending. The dashboard never reports these as done: actions say where the change is visible in WeCodee instead. Public pages read a fixed sample directory from `lib/workspace/public.ts`. Use sample information when exploring the dashboard.
+
+`docs/srs-traceability.md` maps every SRS requirement to its page, component and status, and lists the backend dependencies.
+
+### PWA
+
+`app/manifest.ts`, the icons in `public/icons/` and `public/sw.js` make WeCodee installable (FR-83). The service worker is registered in production builds only. It caches the build files and brand art, and keeps the last copy of each page you open so it works offline (FR-84). Auth, API and Server Action requests are never cached. The account menu offers **Install WeCodee** where the browser supports it, and Add to Home Screen steps on iPhone.
+
+### Preview mode
+
+When auth isn't configured and `NODE_ENV` is `development`, the dashboards open with a preview account so the dashboard can be explored without a mail relay. The sample strip then also switches the journey (*New builder* or *In a team*) and the role (*Learner*, *Supervisor* or *Admin*). Production never uses the preview account.
+
 ## Artwork
 
 Authentication videos are the supplied files in `public/`. The WebP posters in `public/posters/auth/` use selected frames from those videos. The static illustrations in `public/illustrations/` were generated with the built-in image generation tool, using `public/posters/path-start.webp` as the original mascot reference.
@@ -45,4 +81,9 @@ The shared prompt asked for the same full-body sheep with white cloud-shaped hai
 
 ## Checks
 
-`npm run lint` checks source style. `npm run build` checks types and produces a production build.
+- `npm run lint` checks source style.
+- `npm run typecheck` checks types.
+- `npm test` runs the SRS rule tests with Node's built-in test runner.
+- `npm run build` produces a production build.
+
+On Windows machines that block Next.js's native SWC binary, Turbopack can't start. Use `npx next dev --webpack` and `npx next build --webpack` instead; `next.config.ts` runs the Tailwind loader under webpack too, so the landing and auth pages keep their styles.

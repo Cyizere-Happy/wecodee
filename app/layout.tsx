@@ -12,6 +12,8 @@ export const metadata: Metadata = {
       "From your first idea to your first real project. Learn the process. Build with confidence. Make something yours.",
     images: ["/posters/hero-end.webp"],
   },
+  icons: { apple: "/icons/apple-touch-icon.png" },
+  appleWebApp: { capable: true, title: "WeCodee", statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {

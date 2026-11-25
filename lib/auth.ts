@@ -67,6 +67,12 @@ async function initializeAuth(config: NonNullable<ReturnType<typeof configuredAu
     secret: config.secret,
     database,
     logger: { disabled: true },
+    user: {
+      additionalFields: {
+        // SRS §2.2 roles. Only admins change it (input: false keeps it out of sign-up and profile updates).
+        role: { type: "string", required: false, defaultValue: "learner", input: false },
+      },
+    },
     emailAndPassword: {
       enabled: true,
       minPasswordLength: 12,
