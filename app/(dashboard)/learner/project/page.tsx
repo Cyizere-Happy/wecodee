@@ -10,6 +10,9 @@ import { MascotClip } from "@/components/workspace/bits";
 
 export const metadata = { title: "Project" };
 
+// Session-bound page: allowed to block on navigation (see the dashboard layout).
+export const instant = false;
+
 export default async function ProjectPage() {
   const { viewer, data } = await loadWorkspace("/learner/project");
   const team = myTeam(data, viewer);

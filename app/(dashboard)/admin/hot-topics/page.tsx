@@ -7,6 +7,9 @@ import { FilterInput } from "@/components/workspace/bits";
 export const metadata = { title: "Hot Topics" };
 
 /** FR-11–18: Hot Topic library management. */
+// Session-bound page: allowed to block on navigation (see the dashboard layout).
+export const instant = false;
+
 export default async function AdminHotTopics() {
   const { viewer, data } = await loadWorkspace("/admin/hot-topics");
   if (viewer.role !== "admin") return <Forbidden needs="admins" />;

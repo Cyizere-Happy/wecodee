@@ -13,6 +13,9 @@ Then give me a short exercise. Don't give me the full solution until I've tried.
 When I share my attempt, point out one thing I did well and one thing to improve.`;
 
 /** Create or edit a Hot Topic, its check questions and publish state. */
+// Session-bound page: allowed to block on navigation (see the dashboard layout).
+export const instant = false;
+
 export default async function EditHotTopic({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const { viewer, data } = await loadWorkspace("/admin/hot-topics/" + id);

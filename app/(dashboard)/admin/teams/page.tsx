@@ -9,6 +9,9 @@ import { ActionButton, ActionForm, Choices, DialogButton, Select, Submit, TextAr
 export const metadata = { title: "Teams & formation" };
 
 /** FR-27/28/70: automatic team formation preview, confirmation and admin changes. */
+// Session-bound page: allowed to block on navigation (see the dashboard layout).
+export const instant = false;
+
 export default async function AdminTeams() {
   const { viewer, data } = await loadWorkspace("/admin/teams");
   if (viewer.role !== "admin") return <Forbidden needs="admins" />;

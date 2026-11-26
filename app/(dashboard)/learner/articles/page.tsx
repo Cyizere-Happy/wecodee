@@ -9,6 +9,9 @@ import { Icon } from "@/components/workspace/Icon";
 
 export const metadata = { title: "Articles" };
 
+// Session-bound page: allowed to block on navigation (see the dashboard layout).
+export const instant = false;
+
 export default async function Articles({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const { data } = await loadWorkspace("/learner/articles");
   const { q = "", category = "", saved = "" } = await searchParams;

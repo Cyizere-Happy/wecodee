@@ -6,6 +6,9 @@ import { ActionForm, Field, Select, Submit, TextArea } from "@/components/worksp
 export const metadata = { title: "Milestones" };
 
 /** FR-37/44: the eight milestone templates every project follows. */
+// Session-bound page: allowed to block on navigation (see the dashboard layout).
+export const instant = false;
+
 export default async function AdminMilestones() {
   const { viewer, data } = await loadWorkspace("/admin/milestones");
   if (viewer.role !== "admin") return <Forbidden needs="admins" />;

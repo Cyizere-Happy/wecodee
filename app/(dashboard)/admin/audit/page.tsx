@@ -6,6 +6,9 @@ import { CsvButton, FilterInput } from "@/components/workspace/bits";
 export const metadata = { title: "Audit log" };
 
 /** FR-60: read-only log of sensitive actions. */
+// Session-bound page: allowed to block on navigation (see the dashboard layout).
+export const instant = false;
+
 export default async function AdminAudit() {
   const { viewer, data } = await loadWorkspace("/admin/audit");
   if (viewer.role !== "admin") return <Forbidden needs="admins" />;

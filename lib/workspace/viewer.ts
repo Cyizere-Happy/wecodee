@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { getAuth } from "@/lib/auth";
 import type { Role, Viewer } from "./types";
 
@@ -23,6 +24,10 @@ function adminEmails() {
  * Returns null when there is no verified session.
  */
 export const getViewer = cache(async (): Promise<Viewer | null> => {
+  // Everything behind a session is per-request, and the pages read the clock
+  // (overdue checks, weekly stats, "today"). With Cache Components that must
+  // happen after prerendering stops, so stop it here for every signed-in page.
+  await connection();
   const auth = await getAuth();
   if (!auth) {
     if (!previewAvailable()) return null;

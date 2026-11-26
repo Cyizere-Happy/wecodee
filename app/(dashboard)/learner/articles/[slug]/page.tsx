@@ -8,6 +8,9 @@ import { ActionButton } from "@/components/workspace/forms";
 import { PageCrumb } from "@/components/workspace/Shell";
 import { Icon } from "@/components/workspace/Icon";
 
+// Session-bound page: allowed to block on navigation (see the dashboard layout).
+export const instant = false;
+
 export default async function Article({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const { data } = await loadWorkspace("/learner/articles/" + slug);

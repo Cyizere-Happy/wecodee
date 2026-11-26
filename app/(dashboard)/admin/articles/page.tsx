@@ -26,6 +26,9 @@ function ArticleForm({ article, topics, templates }: { article?: Article; topics
 }
 
 /** FR-19–21: short articles (≤ 1,000 words) linked to topics and milestones. */
+// Session-bound page: allowed to block on navigation (see the dashboard layout).
+export const instant = false;
+
 export default async function AdminArticles() {
   const { viewer, data } = await loadWorkspace("/admin/articles");
   if (viewer.role !== "admin") return <Forbidden needs="admins" />;

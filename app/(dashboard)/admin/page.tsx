@@ -7,6 +7,9 @@ import { CsvButton } from "@/components/workspace/bits";
 export const metadata = { title: "Reports" };
 
 /** FR-59: platform reports with CSV export. */
+// Session-bound page: allowed to block on navigation (see the dashboard layout).
+export const instant = false;
+
 export default async function AdminReports() {
   const { viewer, data } = await loadWorkspace("/admin");
   if (viewer.role !== "admin") return <Forbidden needs="admins" />;

@@ -6,6 +6,9 @@ import { Badge, EmptyState, Forbidden, Meter, MilestoneBadge, PageHeader } from 
 
 export const metadata = { title: "Teams" };
 
+// Session-bound page: allowed to block on navigation (see the dashboard layout).
+export const instant = false;
+
 export default async function SupervisedTeams() {
   const { viewer, data } = await loadWorkspace("/supervisor/teams");
   if (viewer.role === "learner") return <Forbidden needs="supervisors and admins" />;

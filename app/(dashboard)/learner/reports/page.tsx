@@ -10,6 +10,9 @@ import { ReportGrid } from "@/components/workspace/ReportGrid";
 
 export const metadata = { title: "Daily reports" };
 
+// Session-bound page: allowed to block on navigation (see the dashboard layout).
+export const instant = false;
+
 export default async function Reports() {
   const { viewer, data, scenario } = await loadWorkspace("/learner/reports");
   const team = myTeam(data, viewer);

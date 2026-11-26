@@ -32,6 +32,9 @@ function StaffSettings({ name, email, role, preview }: { name: string; email: st
   );
 }
 
+// Session-bound page: allowed to block on navigation (see the dashboard layout).
+export const instant = false;
+
 export default async function Settings() {
   const { viewer, data } = await loadWorkspace("/settings");
   if (viewer.role !== "learner") return <StaffSettings name={viewer.name} email={viewer.email} role={viewer.role} preview={viewer.preview} />;

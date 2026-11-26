@@ -9,6 +9,9 @@ import { ActionButton, ActionForm, DialogButton, Field, FieldError, Submit, Text
 import { PageCrumb } from "@/components/workspace/Shell";
 import { Icon } from "@/components/workspace/Icon";
 
+// Session-bound page: allowed to block on navigation (see the dashboard layout).
+export const instant = false;
+
 export default async function MilestonePage({ params }: { params: Promise<{ order: string }> }) {
   const { order: raw } = await params;
   const order = Number(raw);

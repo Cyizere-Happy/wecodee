@@ -6,6 +6,9 @@ import { ActionForm, Field, Submit } from "@/components/workspace/forms";
 export const metadata = { title: "Platform settings" };
 
 /** FR-58: configurable platform rules. Every change is audited. */
+// Session-bound page: allowed to block on navigation (see the dashboard layout).
+export const instant = false;
+
 export default async function AdminSettings() {
   const { viewer, data } = await loadWorkspace("/admin/settings");
   if (viewer.role !== "admin") return <Forbidden needs="admins" />;

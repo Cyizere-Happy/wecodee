@@ -9,6 +9,9 @@ import { ActionForm, Choices, DialogButton, Field, FieldError, Select, Submit, T
 import { PageCrumb } from "@/components/workspace/Shell";
 import { Icon } from "@/components/workspace/Icon";
 
+// Session-bound page: allowed to block on navigation (see the dashboard layout).
+export const instant = false;
+
 export default async function ReviewPage({ params }: { params: Promise<{ projectId: string; order: string }> }) {
   const { projectId, order: raw } = await params;
   const { viewer, data } = await loadWorkspace(`/supervisor/reviews/${projectId}/${raw}`);

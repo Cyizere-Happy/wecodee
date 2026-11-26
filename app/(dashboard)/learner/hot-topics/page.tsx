@@ -7,6 +7,9 @@ import { Icon } from "@/components/workspace/Icon";
 
 export const metadata = { title: "Hot Topics" };
 
+// Session-bound page: allowed to block on navigation (see the dashboard layout).
+export const instant = false;
+
 export default async function HotTopics({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const { data } = await loadWorkspace("/learner/hot-topics");
   const { q = "", category = "", level = "", phase = "", status = "" } = await searchParams;

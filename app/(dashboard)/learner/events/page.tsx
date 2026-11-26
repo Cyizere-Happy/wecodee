@@ -9,6 +9,9 @@ import { Icon } from "@/components/workspace/Icon";
 
 export const metadata = { title: "Live events" };
 
+// Session-bound page: allowed to block on navigation (see the dashboard layout).
+export const instant = false;
+
 export default async function Events() {
   const { data } = await loadWorkspace("/learner/events");
   const now = nowMs();

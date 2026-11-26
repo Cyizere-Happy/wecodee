@@ -8,6 +8,9 @@ import { ReportGrid } from "@/components/workspace/ReportGrid";
 import { MilestonePath } from "@/components/workspace/MilestonePath";
 import { PageCrumb } from "@/components/workspace/Shell";
 
+// Session-bound page: allowed to block on navigation (see the dashboard layout).
+export const instant = false;
+
 export default async function SupervisedTeam({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const { viewer, data } = await loadWorkspace("/supervisor/teams/" + id);

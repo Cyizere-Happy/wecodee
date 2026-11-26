@@ -7,6 +7,9 @@ import { PreferenceSwitch } from "@/components/workspace/prefs";
 
 export const metadata = { title: "Portfolio" };
 
+// Session-bound page: allowed to block on navigation (see the dashboard layout).
+export const instant = false;
+
 export default async function Portfolio() {
   const { viewer, data } = await loadWorkspace("/learner/portfolio");
   const p = data.profile;

@@ -7,6 +7,9 @@ import { PrintButton } from "@/components/workspace/certificate";
 import { PageCrumb } from "@/components/workspace/Shell";
 
 /** FR-50/52: a printable certificate. "Download PDF" uses the browser's Save as PDF. */
+// Session-bound page: allowed to block on navigation (see the dashboard layout).
+export const instant = false;
+
 export default async function CertificatePage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = await params;
   const { viewer, data } = await loadWorkspace("/learner/certificates/" + code);

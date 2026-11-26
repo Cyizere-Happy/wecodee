@@ -7,6 +7,9 @@ import { QuizRunner } from "@/components/workspace/quiz";
 
 export const metadata = { title: "Skills quiz" };
 
+// Session-bound page: allowed to block on navigation (see the dashboard layout).
+export const instant = false;
+
 export default async function Quiz() {
   const { viewer, data } = await loadWorkspace("/learner/quiz");
   const p = data.profile;

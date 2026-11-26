@@ -13,6 +13,9 @@ import { MilestonePath } from "@/components/workspace/MilestonePath";
 
 export const metadata = { title: "Overview" };
 
+// Session-bound page: allowed to block on navigation (see the dashboard layout).
+export const instant = false;
+
 export default async function Overview() {
   const { viewer, data } = await loadWorkspace("/learner");
   const first = viewer.name.split(" ")[0];

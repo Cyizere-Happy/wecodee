@@ -6,6 +6,9 @@ import { Badge, EmptyState, Forbidden, PageHeader } from "@/components/workspace
 
 export const metadata = { title: "Review queue" };
 
+// Session-bound page: allowed to block on navigation (see the dashboard layout).
+export const instant = false;
+
 export default async function ReviewQueue() {
   const { viewer, data } = await loadWorkspace("/supervisor/reviews");
   if (viewer.role === "learner") return <Forbidden needs="supervisors and admins" />;

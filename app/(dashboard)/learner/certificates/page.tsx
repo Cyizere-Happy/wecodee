@@ -7,6 +7,9 @@ import { VerifyCertificate } from "@/components/workspace/certificate";
 
 export const metadata = { title: "Certificates" };
 
+// Session-bound page: allowed to block on navigation (see the dashboard layout).
+export const instant = false;
+
 export default async function Certificates() {
   const { viewer, data } = await loadWorkspace("/learner/certificates");
   const mine = data.certificates.filter((c) => c.userId === viewer.id);

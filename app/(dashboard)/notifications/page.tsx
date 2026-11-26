@@ -7,6 +7,9 @@ import { ActionButton } from "@/components/workspace/forms";
 
 export const metadata = { title: "Notifications" };
 
+// Session-bound page: allowed to block on navigation (see the dashboard layout).
+export const instant = false;
+
 export default async function Notifications() {
   const { data } = await loadWorkspace("/notifications");
   const items = [...data.notifications].sort((a, b) => b.createdAt.localeCompare(a.createdAt));

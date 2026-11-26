@@ -42,6 +42,9 @@ function EventForm({ event, topics }: { event?: LiveEvent; topics: HotTopic[] })
 const tone = { draft: undefined, published: "green", cancelled: "red", completed: "blue" } as const;
 
 /** FR-22–26: live events, deep-dive scheduling, cancellation and recordings. */
+// Session-bound page: allowed to block on navigation (see the dashboard layout).
+export const instant = false;
+
 export default async function AdminEvents() {
   const { viewer, data } = await loadWorkspace("/admin/events");
   if (viewer.role !== "admin") return <Forbidden needs="admins" />;

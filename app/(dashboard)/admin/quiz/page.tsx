@@ -8,6 +8,9 @@ import { FilterInput } from "@/components/workspace/bits";
 export const metadata = { title: "Quiz bank" };
 
 /** FR-8–10: the skills quiz question bank. Options are shuffled when served. */
+// Session-bound page: allowed to block on navigation (see the dashboard layout).
+export const instant = false;
+
 export default async function AdminQuiz() {
   const { viewer, data } = await loadWorkspace("/admin/quiz");
   if (viewer.role !== "admin") return <Forbidden needs="admins" />;

@@ -9,6 +9,9 @@ import { CsvButton, FilterInput } from "@/components/workspace/bits";
 export const metadata = { title: "Certificates" };
 
 /** FR-49–52: issued certificates and revocation. */
+// Session-bound page: allowed to block on navigation (see the dashboard layout).
+export const instant = false;
+
 export default async function AdminCertificates() {
   const { viewer, data } = await loadWorkspace("/admin/certificates");
   if (viewer.role !== "admin") return <Forbidden needs="admins" />;

@@ -9,6 +9,9 @@ import { ActionForm, Choices, Submit, TextArea } from "@/components/workspace/fo
 import { PageCrumb } from "@/components/workspace/Shell";
 import { Icon } from "@/components/workspace/Icon";
 
+// Session-bound page: allowed to block on navigation (see the dashboard layout).
+export const instant = false;
+
 export default async function HotTopic({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const { data } = await loadWorkspace("/learner/hot-topics/" + id);

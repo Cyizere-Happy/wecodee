@@ -9,6 +9,9 @@ import { Icon } from "@/components/workspace/Icon";
 
 export const metadata = { title: "Supervisor" };
 
+// Session-bound page: allowed to block on navigation (see the dashboard layout).
+export const instant = false;
+
 export default async function SuperviseOverview() {
   const { viewer, data } = await loadWorkspace("/supervisor");
   if (viewer.role === "learner") return <Forbidden needs="supervisors and admins" />;

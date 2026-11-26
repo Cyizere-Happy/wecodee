@@ -13,6 +13,9 @@ export const metadata = { title: "Team" };
 
 const timeLabel = { morning: "Mornings", afternoon: "Afternoons", evening: "Evenings", weekend: "Weekends" } as const;
 
+// Session-bound page: allowed to block on navigation (see the dashboard layout).
+export const instant = false;
+
 export default async function TeamPage() {
   const { viewer, data } = await loadWorkspace("/learner/team");
   const team = myTeam(data, viewer);

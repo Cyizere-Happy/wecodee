@@ -9,6 +9,9 @@ import { RoleSelect } from "@/components/workspace/admin";
 export const metadata = { title: "Users" };
 
 /** FR-57: manage users, roles and account status. */
+// Session-bound page: allowed to block on navigation (see the dashboard layout).
+export const instant = false;
+
 export default async function AdminUsers() {
   const { viewer, data } = await loadWorkspace("/admin/users");
   if (viewer.role !== "admin") return <Forbidden needs="admins" />;
