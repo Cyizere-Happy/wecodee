@@ -63,7 +63,7 @@ export default async function Overview() {
     if (milestone.status === "submitted") {
       next = { art: "states/waiting", title: "Your milestone is with your supervisor", detail: "You can read the decision and feedback on the milestone once the review is recorded.", href, label: "View submission" };
     } else if (milestone.status === "changes_requested") {
-      next = { art: "states/feedback", title: "Your supervisor left feedback", detail: "Read the requested changes and agree on who will handle each revision before your team resubmits.", href, label: "Read feedback" };
+      next = { art: "states/feedback", title: "Your supervisor left feedback", detail: "Read the requested changes and agree on who will handle each revision before your team resubmits.", href: href + "#milestone-feedback", label: "Read feedback" };
     } else {
       next = { art: milestoneGuide(milestone.order, milestone.name)?.art ?? "states/submission", title: milestone.name, detail: milestone.deliverable + (milestone.dueDate ? " · Due " + formatDate(milestone.dueDate) : ""), href, label: "Open current milestone" };
     }

@@ -8,7 +8,7 @@ import { Badge, Card, Feedback, Forbidden, MilestoneBadge, PageHeader } from "@/
 import { ActionForm, Choices, DialogButton, Field, FieldError, Select, Submit, TextArea } from "@/components/workspace/forms";
 import { PageCrumb } from "@/components/workspace/Shell";
 import { Icon } from "@/components/workspace/Icon";
-import { MascotGuide, VisualSequence } from "@/components/workspace/Guidance";
+import { ReviewOutcome } from "@/components/workspace/learning/ReviewOutcome";
 
 // Session-bound page: allowed to block on navigation (see the dashboard layout).
 export const instant = false;
@@ -86,6 +86,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ project
         lead={`Deliverable: ${milestone.deliverable}.`}
         actions={<><MilestoneBadge status={milestone.status} /><Link className="ws-btn ws-btn-secondary ws-btn-sm" href={"/supervisor/teams/" + team.id}>Team page</Link></>}
       />
+      {submission && <ReviewOutcome version={submission.version} last={milestone.order === project.milestones.length} decision={submission.review?.decision} />}
       {!submission ? (
         <div className="ws-grid-2"><div className="ws-stack"><Feedback tone="info">Nothing has been submitted for this milestone yet.</Feedback></div><div className="ws-stack">{tools}</div></div>
       ) : (
@@ -127,16 +128,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ project
           </div>
           <div className="ws-stack">
             {waiting ? (
-              <>
-                <MascotGuide art="states/feedback" title="Give feedback the team can act on" compact>
-                  <p>Point to a specific part of the deliverable. If something is missing, explain what would satisfy that checklist item.</p>
-                </MascotGuide>
                 <Card title="Your review">
-                  <div className="ws-guidance-intro"><VisualSequence label="Review process" steps={[
-                    { label: "Open deliverable", icon: "file" },
-                    { label: "Check criteria", icon: "clipboard" },
-                    { label: "Record decision", icon: "check" },
-                  ]} /></div>
                   <ActionForm action={reviewSubmission} successArt="supervisor/decision">
                     <input type="hidden" name="projectId" value={project.id} />
                     <input type="hidden" name="order" value={milestone.order} />
@@ -147,20 +139,19 @@ export default async function ReviewPage({ params }: { params: Promise<{ project
                       </div>
                       <FieldError name="checklist" />
                     </fieldset>
-                    <TextArea label="Comments for the team" name="comments" rows={5} maxLength={2000} placeholder="What works, what needs to change, and why." />
+                    <TextArea label="Comments for the team" name="comments" rows={5} maxLength={2000} placeholder="What works, what needs to change, and why." help="Connect each requested change to the relevant checklist item." />
                     <Choices legend="Decision" name="decision" options={[["approved", "Approve"], ["changes_requested", "Request changes"]]} />
                     <p className="ws-small ws-muted">The team sees your decision and comments on their milestone page.</p>
                     <div><Submit arrow>Send review</Submit></div>
                   </ActionForm>
                 </Card>
-              </>
             ) : (
               <Card title={submission.review ? "Review recorded" : "Review"}>
                 {submission.review ? (
-                  <MascotGuide art="supervisor/decision" title={submission.review.decision === "approved" ? "Milestone approved" : "Changes requested"} compact>
-                    <p>{submission.review.comments}</p>
-                    <p className="ws-small ws-guide-review">{personById(data, submission.review.supervisorId)?.name} · {formatDateTime(submission.review.createdAt)}</p>
-                  </MascotGuide>
+                  <>
+                    <p className="ws-guide-review">{submission.review.comments}</p>
+                    <p className="ws-ops-note">{personById(data, submission.review.supervisorId)?.name} · {formatDateTime(submission.review.createdAt)}</p>
+                  </>
                 ) : <p className="ws-muted">Not reviewed yet.</p>}
               </Card>
             )}

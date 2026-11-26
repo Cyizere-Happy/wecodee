@@ -7,7 +7,7 @@ import { Badge, Card, Forbidden, Meter, MilestoneBadge, PageHeader, ReadinessBad
 import { ReportGrid } from "@/components/workspace/ReportGrid";
 import { MilestonePath } from "@/components/workspace/MilestonePath";
 import { PageCrumb } from "@/components/workspace/Shell";
-import { MascotGuide } from "@/components/workspace/Guidance";
+import { WorkflowRail } from "@/components/workspace/learning/WorkflowRail";
 
 // Session-bound page: allowed to block on navigation (see the dashboard layout).
 export const instant = false;
@@ -41,9 +41,13 @@ export default async function SupervisedTeam({ params }: { params: Promise<{ id:
             <MilestonePath milestones={project.milestones} base={`/supervisor/reviews/${project.id}/`} />
           </Card>
         ) : (
-          <MascotGuide art="supervisor/teams" title={team.status === "active" ? "Waiting for the first project" : "Waiting for group approval"} compact>
-            <p>{team.status === "active" ? "When the leader creates a project, its milestones and review history appear here." : "The team can start a project once its WhatsApp group is approved."}</p>
-          </MascotGuide>
+          <section className="ws-priority" aria-label="Team setup">
+            <WorkflowRail label="Team setup" steps={[
+              { label: "Team formed", icon: "users", state: "complete" },
+              { label: "Group approval", icon: "whatsapp", state: team.groupStatus === "approved" ? "complete" : "current" },
+              { label: "Leader creates project", icon: "flag", state: team.status === "active" ? "current" : "upcoming" },
+            ]} />
+          </section>
         )}
         <div className="ws-table-wrap">
           <table className="ws-table">

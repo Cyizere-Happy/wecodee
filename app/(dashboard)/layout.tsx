@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import "@fontsource-variable/geist";
 import "@fontsource-variable/geist-mono";
 import "@/components/workspace/workspace.css";
+import "@/components/workspace/learning/lessons.css";
 import { WorkspaceShell, type SearchEntry } from "@/components/workspace/Shell";
 import { ShellSkeleton } from "@/components/workspace/Skeletons";
 import { getViewer } from "@/lib/workspace/viewer";

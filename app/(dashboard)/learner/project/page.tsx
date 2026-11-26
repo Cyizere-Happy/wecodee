@@ -3,11 +3,10 @@ import { loadWorkspace } from "@/lib/workspace/data";
 import { isLeader, isOverdue, myTeam, teamProject } from "@/lib/workspace/selectors";
 import { formatDate, relativeDays } from "@/lib/workspace/rules";
 import { createProject } from "@/lib/workspace/actions";
-import { Card, EmptyState, Mascot, MilestoneBadge, PageHeader } from "@/components/workspace/ui";
+import { Card, EmptyState, MilestoneBadge, PageHeader } from "@/components/workspace/ui";
 import { ActionForm, Field, Submit, TextArea } from "@/components/workspace/forms";
 import { MilestonePath } from "@/components/workspace/MilestonePath";
-import { MascotGuide } from "@/components/workspace/Guidance";
-import { milestoneGuide } from "@/lib/workspace/milestone-guide";
+import { WorkflowRail } from "@/components/workspace/learning/WorkflowRail";
 
 export const metadata = { title: "Project" };
 
@@ -36,7 +35,14 @@ export default async function ProjectPage() {
                 <div><Submit arrow>Create project</Submit></div>
               </ActionForm>
             </Card>
-            <div><MascotGuide art="milestones/problem" title="Start with evidence" compact><p>Describe who has the problem and how you found out. Once the first milestone is approved, the project proposal opens.</p></MascotGuide></div>
+            <section className="ws-priority" aria-labelledby="project-start">
+              <h2 id="project-start">From a problem to the first review</h2>
+              <WorkflowRail label="Getting a project started" steps={[
+                { label: "Create the project", detail: "Describe the problem, target users and evidence.", icon: "file", state: "current" },
+                { label: "Submit milestone one", detail: "Confirm contributions and send the problem statement.", icon: "clipboard", state: "upcoming" },
+                { label: "Write the proposal", detail: "Opens after the problem statement is approved.", icon: "flag", state: "upcoming" },
+              ]} />
+            </section>
           </div>
         ) : (
           <div className="ws-card">
@@ -70,21 +76,15 @@ export default async function ProjectPage() {
             <table className="ws-table">
               <thead><tr><th>#</th><th>Milestone</th><th>Due</th><th>Status</th><th className="num">Versions</th></tr></thead>
               <tbody>
-                {project.milestones.map((m) => {
-                  const guide = milestoneGuide(m.order, m.name);
-                  return (
+                {project.milestones.map((m) => (
                     <tr key={m.order}>
                       <td className="ws-muted">{m.order}</td>
-                      <td><div className="ws-row">
-                        {guide && <Mascot art={guide.art} className="ws-milestone-thumb" />}
-                        <div><Link href={"/learner/project/" + m.order} className="ws-link" style={{ textDecoration: "none", fontWeight: 600 }}>{m.name}</Link><div className="ws-small ws-muted">{m.deliverable}</div></div>
-                      </div></td>
+                      <td><Link href={"/learner/project/" + m.order} className="ws-link" style={{ textDecoration: "none", fontWeight: 600 }}>{m.name}</Link><div className="ws-small ws-muted">{m.deliverable}</div></td>
                       <td className="ws-small" style={{ whiteSpace: "nowrap" }}>{m.dueDate ? <>{formatDate(m.dueDate)}<div className="ws-faint">{m.status === "approved" ? "" : relativeDays(m.dueDate)}</div></> : <span className="ws-faint">Not set</span>}</td>
                       <td><MilestoneBadge status={m.status} overdue={isOverdue(m)} /></td>
                       <td className="num">{m.submissions.length || "–"}</td>
                     </tr>
-                  );
-                })}
+                ))}
               </tbody>
             </table>
           </div>

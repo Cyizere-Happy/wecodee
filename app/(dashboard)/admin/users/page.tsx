@@ -1,10 +1,11 @@
 import { loadWorkspace } from "@/lib/workspace/data";
 import { formatDate } from "@/lib/workspace/rules";
 import { createUser, updateUser } from "@/lib/workspace/actions";
-import { Badge, Forbidden, Mascot, PageHeader, ReadinessBadge } from "@/components/workspace/ui";
+import { Badge, Forbidden, PageHeader, ReadinessBadge } from "@/components/workspace/ui";
 import { ActionButton, ActionForm, DialogButton, Field, Select, Submit } from "@/components/workspace/forms";
 import { CsvButton, FilterInput } from "@/components/workspace/bits";
 import { RoleSelect } from "@/components/workspace/admin";
+import { WorkflowRail } from "@/components/workspace/learning/WorkflowRail";
 
 export const metadata = { title: "Users" };
 
@@ -22,8 +23,12 @@ export default async function AdminUsers() {
     <div className="ws-content">
       <PageHeader eyebrow="Admin" title="Users" lead={`${people.length} accounts. Role and status changes are written to the audit log.`} actions={<>
         <CsvButton name="wecodee-users.csv" rows={rows} />
-        <DialogButton label="Add user" icon="plus" variant="primary" title="Add a user" description="They get an email to set their password. Supervisors and admins don’t take the quiz or join teams.">
-          <Mascot art="admin/profiles" className="ws-user-dialog-art" />
+        <DialogButton label="Add user" icon="plus" variant="primary" title="Add a user" description="Invitation emails require the mail queue. Supervisors and admins don’t take the quiz or join learner teams.">
+          <WorkflowRail label="Account setup" steps={[
+            {label: "Account details", icon: "user", state: "current"},
+            {label: "Assign access", icon: "settings", state: "upcoming"},
+            {label: "Record in audit log", icon: "history", state: "upcoming"},
+          ]} />
           <ActionForm action={createUser} reset successArt="admin/completed" errorArt="admin/failed">
             <Field label="Full name" name="name" maxLength={120} autoComplete="off" required />
             <Field label="Email" name="email" type="email" maxLength={200} autoComplete="off" required />
@@ -35,6 +40,14 @@ export default async function AdminUsers() {
           </ActionForm>
         </DialogButton>
       </>} />
+      <details className="ws-role-guide">
+        <summary>What each role can access</summary>
+        <dl>
+          <div><dt>Learner</dt><dd>Lessons, skills quiz, team and project work.</dd></div>
+          <div><dt>Supervisor</dt><dd>Assigned teams, submissions and review decisions.</dd></div>
+          <div><dt>Admin</dt><dd>Users, learning content, platform settings and supervisor tools.</dd></div>
+        </dl>
+      </details>
       <div style={{ marginBottom: 12, maxWidth: 360 }}><FilterInput target="users" placeholder="Filter by name, email or team" /></div>
       <div className="ws-table-wrap" data-filter="users">
         <table className="ws-table">

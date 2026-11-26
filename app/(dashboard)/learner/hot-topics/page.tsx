@@ -4,7 +4,6 @@ import { LEVELS } from "@/lib/workspace/rules";
 import { Badge, EmptyState, PageHeader } from "@/components/workspace/ui";
 import { AutoFilter } from "@/components/workspace/topic";
 import { Icon } from "@/components/workspace/Icon";
-import { MascotGuide } from "@/components/workspace/Guidance";
 
 export const metadata = { title: "Hot Topics" };
 
@@ -33,15 +32,10 @@ export default async function HotTopics({ searchParams }: { searchParams: Promis
       <PageHeader
         eyebrow="Learn"
         title="Hot Topics"
-        lead="Short lessons you can use on your project."
+        lead="Short lessons, coaching prompts, and check questions you can use on your project."
         actions={<span className="ws-badge" data-plain>{done} of {topics.length} completed</span>}
       />
 
-      {topics.length > 0 && !q && !category && !level && !phase && !status && (
-        <div className="ws-guidance-intro"><MascotGuide art="learner/lesson" title="Pick one idea to put into practice" compact>
-          <p>Start with the short video when it’s available. Use the coaching prompt to practise, then try the check questions.</p>
-        </MascotGuide></div>
-      )}
 
       <AutoFilter>
         <label className="ws-search">

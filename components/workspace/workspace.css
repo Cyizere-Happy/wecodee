@@ -46,7 +46,7 @@
   padding: clamp(14px, 2vw, 24px);
   border: 1px solid var(--ws-border);
   border-radius: var(--ws-radius);
-  background: var(--ws-surface);
+  background: #fff;
 }
 .ws-guide h2 { font-size: 1.0625rem; font-weight: 650; letter-spacing: -.025em; line-height: 1.25; }
 .ws-guide-text { max-width: 65ch; margin-top: 6px; color: var(--ws-muted); }
@@ -95,13 +95,10 @@
   left: 23px;
   top: -7px;
 }
-.ws-milestone-thumb { flex: none; width: 42px; aspect-ratio: 1; }
-.ws-milestone-thumb img { width: 100%; height: 100%; object-fit: contain; }
 .ws-guide-review { white-space: pre-wrap; overflow-wrap: anywhere; margin-top: 4px; }
 .ws-guide-anchor { scroll-margin-top: 75px; }
 .ws-team-illustration { width: min(100%, 205px); margin: 12px auto; }
 .ws-feedback-art { flex: none; object-fit: contain; }
-.ws-user-dialog-art { width: 80px; aspect-ratio: 1; margin: 0 auto 10px; }
 .ws-quiz-illustration { flex: none; width: 78px; aspect-ratio: 1; }
 .ws-match-notes { display: grid; gap: 6px; list-style: disc; padding-inline-start: 18px; margin-top: 8px; }
 

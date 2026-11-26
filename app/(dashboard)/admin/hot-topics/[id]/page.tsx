@@ -6,7 +6,8 @@ import type { HotTopic } from "@/lib/workspace/types";
 import { Badge, Card, Forbidden, PageHeader } from "@/components/workspace/ui";
 import { ActionButton, ActionForm, Field, Select, Submit, TextArea } from "@/components/workspace/forms";
 import { PageCrumb } from "@/components/workspace/Shell";
-import { MascotGuide, VisualSequence } from "@/components/workspace/Guidance";
+import { LessonArt } from "@/components/workspace/learning/LessonParts";
+import { WorkflowRail } from "@/components/workspace/learning/WorkflowRail";
 
 const TEMPLATE = `You are my patient coding tutor. I'm a {level} learner working on: {topic}.
 Explain the idea in simple terms with one small example.
@@ -25,6 +26,7 @@ export default async function EditHotTopic({ params }: { params: Promise<{ id: s
   const topic: HotTopic | undefined = isNew ? undefined : data.topics.find((t) => t.id === id);
   if (!isNew && !topic) notFound();
   const n = topic?.questions.length ?? 0;
+  const ready = n >= 3 && n <= 5;
 
   return (
     <div className="ws-content">
@@ -37,6 +39,19 @@ export default async function EditHotTopic({ params }: { params: Promise<{ id: s
           ? <><Badge tone="green">Published</Badge><ActionButton run={setTopicPublished.bind(null, topic.id, false)} confirm={{ title: "Move to drafts?", body: "Learners won’t see it until you publish again. Their progress is kept.", action: "Unpublish" }}>Unpublish</ActionButton></>
           : <><Badge>Draft</Badge><ActionButton run={setTopicPublished.bind(null, topic.id, true)} successArt="admin/published" errorArt="admin/failed" variant="primary" disabled={n < 3 || n > 5} tip={n < 3 ? "Add at least 3 check questions first" : undefined}>Publish</ActionButton></>)}
       />
+      {!topic?.published && (
+        <section className="ws-ops-scene" aria-labelledby="publishing-path-title">
+          <LessonArt name="publishing" />
+          <div>
+            <div className="ws-ops-scene-head"><h2 id="publishing-path-title">From draft to learner library</h2></div>
+            <WorkflowRail label="Publishing workflow" steps={[
+              { label: "Save draft", icon: "file", state: topic ? "complete" : "current", detail: "Title, lesson and coaching prompt" },
+              { label: "Check questions", icon: "quiz", state: ready ? "complete" : topic ? "current" : "upcoming", detail: `${n} saved · 3–5 required` },
+              { label: "Publish", icon: "play", state: ready ? "current" : "upcoming", detail: ready ? "Ready to publish to learners" : "Opens when the question count is valid" },
+            ]} />
+          </div>
+        </section>
+      )}
       <div className="ws-grid-2">
         <Card title="Details">
           <ActionForm action={saveTopic}>
@@ -60,20 +75,6 @@ export default async function EditHotTopic({ params }: { params: Promise<{ id: s
         </Card>
 
         <div className="ws-stack">
-          {!topic?.published && (
-            <MascotGuide art="admin/library" title="Prepare this topic for learners" compact details={
-              <details className="ws-guide-example">
-                <summary>Publishing steps</summary>
-                <VisualSequence label="Publishing steps" steps={[
-                  { label: "Save a draft", icon: "file", state: topic ? "done" : "current" },
-                  { label: "Add 3–5 check questions", icon: "quiz", state: n >= 3 && n <= 5 ? "done" : topic ? "current" : "pending" },
-                  { label: "Publish", icon: "check", state: n >= 3 && n <= 5 ? "current" : "pending" },
-                ]} />
-              </details>
-            }>
-              <p>{!topic ? "Save the draft to start adding check questions." : n < 3 ? `Add ${3 - n} more check question${n === 2 ? "" : "s"} to publish.` : "Check the prompt and practice task before publishing."}</p>
-            </MascotGuide>
-          )}
           {topic ? (
             <>
               <Card title="Check questions" action={<Badge tone={n >= 3 && n <= 5 ? "green" : "amber"} plain>{n} of 3–5</Badge>} pad={false}>

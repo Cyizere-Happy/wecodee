@@ -3,7 +3,6 @@ import { personById, teamProject } from "@/lib/workspace/selectors";
 import { formatDate, kigaliDay, nowMs } from "@/lib/workspace/rules";
 import { Badge, Card, Feedback, Forbidden, Meter, PageHeader, QuietLink, Stats } from "@/components/workspace/ui";
 import { CsvButton } from "@/components/workspace/bits";
-import { MascotGuide } from "@/components/workspace/Guidance";
 
 export const metadata = { title: "Reports" };
 
@@ -104,12 +103,6 @@ export default async function AdminReports() {
         </Card>
       </div>
 
-      <div className="ws-section">
-        <MascotGuide art="admin/analytics" title="How to read these reports" compact>
-          <p>Placement is measured against registered learners. Review turnaround measures completed reviews, from submission to decision. Pending reviews are counted separately.</p>
-        </MascotGuide>
-      </div>
-
       <div className="ws-grid-even ws-section">
         <Card title="Gender and readiness">
           <p className="ws-small ws-muted" style={{ marginBottom: 9 }}>Teams aim for at least 2 women and 2 men, at least 2 High and at most 2 Low readiness.</p>
@@ -124,6 +117,7 @@ export default async function AdminReports() {
             <dt>Waiting for review</dt><dd>{waitingReview}</dd>
             <dt>Event attendance</dt><dd>{marked ? <>{attended} attended of {registered} registered</> : <span className="ws-faint">Not marked yet</span>} <QuietLink href="/admin/events">Events</QuietLink></dd>
           </dl>
+          <p className="ws-ops-note">Review time runs from submission to decision. The average uses completed reviews.</p>
         </Card>
       </div>
       <div className="ws-section">

@@ -6,7 +6,7 @@ import { confirmInactive, resolveBlocker, reviewGroup } from "@/lib/workspace/ac
 import { Badge, Card, EmptyState, Forbidden, PageHeader, QuietLink, Stats } from "@/components/workspace/ui";
 import { ActionButton, ActionForm, Choices, DialogButton, Submit, TextArea } from "@/components/workspace/forms";
 import { Icon } from "@/components/workspace/Icon";
-import { MascotGuide } from "@/components/workspace/Guidance";
+import { WorkflowRail } from "@/components/workspace/learning/WorkflowRail";
 
 export const metadata = { title: "Supervisor" };
 
@@ -31,23 +31,20 @@ export default async function SuperviseOverview() {
   return (
     <div className="ws-content">
       <PageHeader eyebrow="Supervisor" title={`Good to see you, ${viewer.name.split(" ")[0]}.`} lead="Everything waiting on you across the teams you supervise, oldest first." />
-      <div className="ws-guidance-intro">
-        {nextReview ? (
-          <MascotGuide art="supervisor/review" title="Start with the oldest submission" compact action={<QuietLink href={`/supervisor/reviews/${nextReview.project.id}/${nextReview.milestone.order}`}>Review {nextReview.team.name}’s submission</QuietLink>}>
-            <p>{nextReview.milestone.name} · Submitted {relativeDays(nextReview.at)}. Open the deliverable and compare it with the milestone checklist.</p>
-          </MascotGuide>
-        ) : (
-          <MascotGuide art="supervisor/teams" title={groups.length ? "Group links are ready to check" : "No submissions waiting for review"} compact action={groups.length ? <QuietLink href="#group-approvals">View group links</QuietLink> : <QuietLink href="/supervisor/teams">View teams</QuietLink>}>
-            <p>{groups.length ? "Join each group and check its members before approving it." : "Check your teams for open blockers or upcoming milestone due dates."}</p>
-          </MascotGuide>
-        )}
-      </div>
       <Stats items={[
         { label: "Assigned teams", value: teams.length, icon: "users" },
         { label: "Awaiting review", value: queue.length, icon: "inbox" },
         { label: "Overdue milestones", value: overdue.length, icon: "alert" },
         { label: "Open blockers", value: blockers.length, icon: "flag" },
       ]} />
+      <section className="ws-priority" aria-labelledby="supervisor-priority">
+        <h2 id="supervisor-priority">Where your teams need you</h2>
+        <WorkflowRail label="Team responsibilities in workflow order" steps={[
+          { label: "Group approval", icon: "whatsapp", state: !nextReview && groups.length ? "current" : undefined, detail: groups.length ? <QuietLink href="#group-approvals">{groups.length} awaiting approval</QuietLink> : "No groups waiting" },
+          { label: "Active team work", icon: "users", detail: <QuietLink href="/supervisor/teams">{blockers.length} open blocker{blockers.length === 1 ? "" : "s"} · {overdue.length} overdue</QuietLink> },
+          { label: "Milestone review", icon: "clipboard", state: nextReview ? "current" : undefined, detail: nextReview ? <QuietLink href={`/supervisor/reviews/${nextReview.project.id}/${nextReview.milestone.order}`}>Oldest · {nextReview.team.name}, {nextReview.milestone.name}</QuietLink> : "No submissions waiting" },
+        ]} />
+      </section>
 
       <div className="ws-grid-2" style={{ marginTop: 24 }}>
         <div className="ws-stack">

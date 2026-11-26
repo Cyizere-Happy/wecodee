@@ -4,12 +4,15 @@ import { loadWorkspace } from "@/lib/workspace/data";
 import { isLeader, isOverdue, myTeam, personById, teamProject } from "@/lib/workspace/selectors";
 import { formatDate, formatDateTime, relativeDays } from "@/lib/workspace/rules";
 import { confirmContribution, markMilestoneTopicWatched, setMilestoneDue, submitMilestone } from "@/lib/workspace/actions";
-import { Badge, Card, EmptyState, MilestoneBadge, PageHeader, QuietLink } from "@/components/workspace/ui";
-import { MascotGuide, VisualSequence } from "@/components/workspace/Guidance";
+import { Badge, Card, MilestoneBadge, PageHeader, QuietLink } from "@/components/workspace/ui";
 import { milestoneGuide } from "@/lib/workspace/milestone-guide";
 import { ActionButton, ActionForm, DialogButton, Field, FieldError, Submit, TextArea } from "@/components/workspace/forms";
 import { PageCrumb } from "@/components/workspace/Shell";
 import { Icon } from "@/components/workspace/Icon";
+import { RequirementsStudio } from "@/components/workspace/learning/RequirementsStudio";
+import { MilestoneStudio } from "@/components/workspace/learning/MilestoneStudios";
+
+const exampleSrsFeedback = "Good structure. FR-4 and FR-9 aren't testable yet: add measurable conditions. Please also add non-functional requirements for data use on phones.";
 
 // Session-bound page: allowed to block on navigation (see the dashboard layout).
 export const instant = false;
@@ -31,16 +34,8 @@ export default async function MilestonePage({ params }: { params: Promise<{ orde
   const latest = milestone.submissions.at(-1);
   const overdue = isOverdue(milestone);
   const guide = milestoneGuide(order, milestone.name);
-  const preview = guide && (
-    <MascotGuide art={guide.art} title="What you’re building" compact details={
-      <details className="ws-guide-example">
-        <summary>{guide.example}</summary>
-        <VisualSequence label={guide.example} steps={guide.steps} compare={"compare" in guide && guide.compare} />
-      </details>
-    }>
-      <p>{guide.goal}</p>
-    </MascotGuide>
-  );
+  const locked = milestone.status === "locked";
+  const srs = Boolean(guide && order === 3);
 
   return (
     <div className="ws-content">
@@ -64,43 +59,63 @@ export default async function MilestonePage({ params }: { params: Promise<{ orde
         </>}
       />
 
-      {milestone.status === "locked" ? (
-        <div className="ws-grid-2">
-          <div className="ws-card"><EmptyState still="lock" title="This milestone is still locked" actions={<Link href="/learner/project" className="ws-btn ws-btn-secondary">Back to project</Link>}>It opens when milestone {order - 1} is approved.</EmptyState></div>
-          {preview}
-        </div>
-      ) : (
-        <div className="ws-grid-2">
-          <div className="ws-stack">
-            {milestone.status === "submitted" && <MascotGuide art="states/waiting" title="Waiting for supervisor review" compact>
-              <p>{latest && <>Version {latest.version} was submitted {formatDateTime(latest.createdAt)}. </>}The review will appear here when your supervisor records it.</p>
-            </MascotGuide>}
-            {milestone.status === "approved" && (
-              <MascotGuide art={order < 8 ? "states/approved" : "states/project-complete"} title="Milestone approved" compact action={order < 8 ? <QuietLink href={"/learner/project/" + (order + 1)}>Go to milestone {order + 1}</QuietLink> : <QuietLink href="/learner/certificates">Check certificates</QuietLink>}>
-                <p>{order < 8 ? `Milestone ${order + 1} is now open.` : "Your project is complete."}</p>
-              </MascotGuide>
-            )}
+      {!locked && (
+        <section className="ws-milestone-tools" aria-label="Milestone actions">
+          {open && <div className="ws-milestone-topic">
+            <Icon name="play" size={18} />
+            <div>
+              <p className="ws-lesson-label">Linked Hot Topic</p>
+              {topic ? <Link href={"/learner/hot-topics/" + topic.id} className="ws-link">{topic.title}</Link> : <p>No Hot Topic is linked.</p>}
+              {topic && <p className="ws-small ws-muted">{Math.ceil(topic.durationSec / 60)} min · {topic.category}</p>}
+            </div>
+            {topic && (milestone.topicWatched ? <Badge tone="green">Watched</Badge> : <ActionButton run={markMilestoneTopicWatched.bind(null, order)} variant="primary">Mark as watched</ActionButton>)}
+          </div>}
+          <nav aria-label="Jump to milestone work">
+            {open && <a href="#milestone-contributions" className="ws-quiet-link">Contributions</a>}
+            {open && leader && <a href="#milestone-submit" className="ws-quiet-link">Submission</a>}
+            {milestone.status === "changes_requested" && latest?.review && <a href="#milestone-feedback" className="ws-quiet-link">Feedback</a>}
+            <a href="#milestone-checklist" className="ws-quiet-link">Checklist</a>
+            <a href="#milestone-history" className="ws-quiet-link">History</a>
+          </nav>
+        </section>
+      )}
+      {(locked || milestone.status === "submitted" || milestone.status === "approved") && (
+        <section className="ws-milestone-notice" aria-label="Milestone status">
+          <Icon name={locked ? "lock" : milestone.status === "submitted" ? "clock" : "check"} size={18} />
+          <p>
+            {locked ? <>This milestone opens when milestone {order - 1} is approved.</>
+              : milestone.status === "submitted" ? <>Version {latest?.version} is waiting for review{latest ? `, submitted ${formatDateTime(latest.createdAt)}` : ""}. The decision will appear in History.</>
+              : order < 8 ? <>Approved. Milestone {order + 1} is now open.</> : "Approved. Your project is complete."}
+          </p>
+          {locked ? <QuietLink href="/learner/project">Back to project</QuietLink> : milestone.status === "approved" && (
+            order < 8 ? <QuietLink href={"/learner/project/" + (order + 1)}>Go to milestone {order + 1}</QuietLink> : <QuietLink href="/learner/certificates">Check certificates</QuietLink>
+          )}
+        </section>
+      )}
+      {guide && (srs ? <RequirementsStudio /> : <MilestoneStudio order={order} />)}
+
+      {!locked && (
+        <div className={open ? "ws-grid-2" : "ws-stack"}>
+          {open && <div className="ws-stack">
             {milestone.status === "changes_requested" && latest?.review && (
-              <MascotGuide art="states/feedback" title="Use the feedback to prepare your next version" compact>
-                <p><strong>{personById(data, latest.review.supervisorId)?.name ?? "Your supervisor"}</strong></p>
-                <p className="ws-guide-review">{latest.review.comments}</p>
-              </MascotGuide>
+                <section className="ws-revision" id="milestone-feedback" aria-labelledby="revision-title">
+                  <div className="ws-row ws-wrap"><Badge tone="red">Changes requested</Badge><span className="ws-muted">Version {latest.version} · {formatDate(latest.review.createdAt)}</span></div>
+                  <h2 id="revision-title">Supervisor feedback</h2>
+                  <figure>
+                    <blockquote>{latest.review.comments}</blockquote>
+                    <figcaption>{personById(data, latest.review.supervisorId)?.name ?? "Your supervisor"}</figcaption>
+                  </figure>
+                  {srs && latest.review.comments.trim() === exampleSrsFeedback && (
+                    <ul className="ws-revision-links">
+                      <li><a href="#testable-requirement">Make FR-4 and FR-9 testable <Icon name="arrowRight" size={13} /></a></li>
+                      <li><a href="#requirement-types">Add measurable conditions <Icon name="arrowRight" size={13} /></a></li>
+                      <li><a href="#mobile-data">Include a nonfunctional requirement for mobile data usage <Icon name="arrowRight" size={13} /></a></li>
+                    </ul>
+                  )}
+                </section>
             )}
 
-            {open && (
-              <>
-                <Card title={<StepTitle n={1} done={milestone.topicWatched} title="Watch the linked Hot Topic" />}>
-                  {topic ? (
-                    <div className="ws-row-between ws-wrap">
-                      <div className="ws-row"><Icon name="play" size={14.5} className="ws-faint" /><div><Link href={"/learner/hot-topics/" + topic.id} className="ws-link">{topic.title}</Link><p className="ws-small ws-muted">{Math.ceil(topic.durationSec / 60)} min · {topic.category}</p></div></div>
-                      {milestone.topicWatched ? <Badge tone="green">Watched</Badge> : <ActionButton run={markMilestoneTopicWatched.bind(null, order)} variant="primary">Mark as watched</ActionButton>}
-                    </div>
-                  ) : <p className="ws-small ws-muted">No Hot Topic is linked to this milestone.</p>}
-                </Card>
-
-                {preview}
-
-                <Card title={<StepTitle n={2} done={team.members.every((m) => confirmed.has(m.userId))} title="Everyone confirms their contribution" />}>
+                <div id="milestone-contributions" className="ws-lesson-anchor"><Card title={<StepTitle n={2} done={team.members.every((m) => confirmed.has(m.userId))} title="Everyone confirms their contribution" />}>
                   <ul style={{ display: "grid", gap: 10 }}>
                     {team.members.map((m) => {
                       const text = confirmed.get(m.userId);
@@ -118,15 +133,13 @@ export default async function MilestonePage({ params }: { params: Promise<{ orde
                     <TextArea label={confirmed.has(viewer.id) ? "Update your contribution" : "Your contribution"} name="contribution" rows={2} maxLength={200} defaultValue={confirmed.get(viewer.id)} placeholder="One or two lines on what you did for this milestone." />
                     <div><Submit size="sm" variant="secondary">Confirm</Submit></div>
                   </ActionForm>
-                </Card>
+                </Card></div>
 
-                <Card title={<StepTitle n={3} done={false} title={leader ? "Submit for review" : "Your leader submits"} />}>
+                <div id="milestone-submit" className="ws-lesson-anchor"><Card title={<StepTitle n={3} done={false} title={leader ? "Submit for review" : "Your leader submits"} />}>
                   {leader ? (
                     <ActionForm action={submitMilestone} successArt="states/received">
                       {milestone.topicWatched && team.members.every((member) => confirmed.has(member.userId)) && (
-                        <MascotGuide art="states/submission" title="Ready to prepare your submission" compact>
-                          <p>Attach the deliverable, disclose any AI use, and tell your supervisor what to look for.</p>
-                        </MascotGuide>
+                        <p className="ws-small ws-muted">Topic and contributions are complete. Attach your deliverable and tell your supervisor what to look for.</p>
                       )}
                       <input type="hidden" name="order" value={order} />
                       <Field label="Link" name="link" type="url" placeholder="Google Docs, GitHub or a live URL" help="A link, a file, or both." />
@@ -137,17 +150,14 @@ export default async function MilestonePage({ params }: { params: Promise<{ orde
                       <div className="ws-row ws-wrap"><Submit arrow disabled={!milestone.topicWatched}>Submit version {milestone.submissions.length + 1}</Submit>{!milestone.topicWatched && <span className="ws-small ws-muted">Watch the Hot Topic first.</span>}</div>
                     </ActionForm>
                   ) : <p className="ws-small ws-muted">{personById(data, team.leaderId)?.name} submits once everyone has confirmed. Make sure your contribution is in.</p>}
-                </Card>
-              </>
-            )}
-          </div>
+                </Card></div>
+          </div>}
 
-          <div className="ws-stack">
-            {!open && preview}
-            <Card title="What your supervisor checks">
+          <div className={open ? "ws-stack" : "ws-grid-even"}>
+            <div id="milestone-checklist" className="ws-lesson-anchor"><Card title="What your supervisor checks">
               <ul style={{ display: "grid", gap: 8 }}>{milestone.checklist.map((c) => <li key={c} className="ws-row ws-small" style={{ alignItems: "flex-start" }}><Icon name="check" size={12.5} className="ws-faint" />{c}</li>)}</ul>
-            </Card>
-            <Card title="History" action={<Badge plain>{milestone.submissions.length} version{milestone.submissions.length === 1 ? "" : "s"}</Badge>}>
+            </Card></div>
+            <div id="milestone-history" className="ws-lesson-anchor"><Card title="History" action={<Badge plain>{milestone.submissions.length} version{milestone.submissions.length === 1 ? "" : "s"}</Badge>}>
               {milestone.submissions.length ? (
                 <ol className="ws-timeline">
                   {[...milestone.submissions].reverse().map((s) => (
@@ -163,7 +173,7 @@ export default async function MilestonePage({ params }: { params: Promise<{ orde
                   ))}
                 </ol>
               ) : <p className="ws-small ws-muted">Nothing submitted yet. Every version and comment will be kept here.</p>}
-            </Card>
+            </Card></div>
             {articles.length > 0 && (
               <Card title="Read before you submit" pad={false}>
                 <ul className="ws-list">{articles.map((a) => <li key={a.slug}><Icon name="book" size={13.5} className="ws-faint" /><div className="ws-list-main"><p>{a.title}</p><p>{a.readingMin} min read</p></div><QuietLink href={"/learner/articles/" + a.slug}>Read</QuietLink></li>)}</ul>

@@ -2,7 +2,6 @@ import { loadWorkspace } from "@/lib/workspace/data";
 import { saveSettings } from "@/lib/workspace/actions";
 import { Forbidden, PageHeader } from "@/components/workspace/ui";
 import { ActionForm, Field, Submit } from "@/components/workspace/forms";
-import { MascotGuide } from "@/components/workspace/Guidance";
 
 export const metadata = { title: "Platform settings" };
 
@@ -18,11 +17,15 @@ export default async function AdminSettings() {
   return (
     <div className="ws-content ws-content-narrow">
       <PageHeader eyebrow="Admin" title="Platform settings" lead="Rules the platform applies automatically. Changes are written to the audit log." />
-      <div className="ws-guidance-intro">
-        <MascotGuide art="admin/control" title="Check related rules before saving" compact>
-          <p>Team size sets the number of learners in a team. Teams per supervisor sets how many teams a supervisor can take on. Review both when adjusting placement capacity.</p>
-        </MascotGuide>
-      </div>
+      <section className="ws-priority" aria-labelledby="supervisor-capacity">
+        <h2 id="supervisor-capacity">How the saved limits work together</h2>
+        <dl className="ws-setting-formula">
+          <div><dt>Learners per team</dt><dd>{s.teamSize}</dd></div>
+          <div><dt>Teams per supervisor</dt><dd><span aria-hidden="true">×</span>{s.supervisorCap}</dd></div>
+          <div className="ws-settings-output"><dt>Potential seats per supervisor</dt><dd><span aria-hidden="true">=</span>{s.teamSize * s.supervisorCap}</dd></div>
+        </dl>
+        <p className="ws-ops-note">This is the upper limit for a supervisor with full teams. Actual placement depends on team matching and available supervisors.</p>
+      </section>
       <ActionForm action={saveSettings} className="" successArt="admin/settings-saved" errorArt="admin/failed">
         <div className="ws-card" style={{ padding: "0 21.5px" }}>
           <section className="ws-form-section">

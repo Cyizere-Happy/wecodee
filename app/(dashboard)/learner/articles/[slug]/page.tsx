@@ -7,7 +7,7 @@ import { Card, PageHeader, QuietLink } from "@/components/workspace/ui";
 import { ActionButton } from "@/components/workspace/forms";
 import { PageCrumb } from "@/components/workspace/Shell";
 import { Icon } from "@/components/workspace/Icon";
-import { MascotGuide, VisualSequence } from "@/components/workspace/Guidance";
+import { WorkflowRail } from "@/components/workspace/learning/WorkflowRail";
 import { milestoneGuide } from "@/lib/workspace/milestone-guide";
 
 // Session-bound page: allowed to block on navigation (see the dashboard layout).
@@ -34,18 +34,18 @@ export default async function Article({ params }: { params: Promise<{ slug: stri
         actions={<ActionButton run={toggleSavedArticle.bind(null, slug)} variant={saved ? "secondary" : "primary"} size="md" icon={saved ? "check" : "download"}>{saved ? "Saved article" : "Save article"}</ActionButton>}
       />
       <div className="ws-grid-2">
-        <article className="ws-card ws-card-pad" style={{ padding: "25px 29px" }}>
+        <article className="ws-editorial-article">
           <div className="ws-prose">{article.body.map((p, i) => <p key={i}>{p}</p>)}</div>
         </article>
         <div className="ws-stack">
-          {guide && <MascotGuide art="learner/concept" title="Apply this to your project" compact details={
-            <details className="ws-guide-example">
+          {guide && <section className="ws-priority" aria-labelledby="article-application">
+            <h2 id="article-application">Apply this to your project</h2>
+            <p className="ws-muted">{guide.goal}</p>
+            <details className="ws-lesson-details">
               <summary>{guide.example}</summary>
-              <VisualSequence label={guide.example} steps={guide.steps} compare={"compare" in guide && guide.compare} />
+              <WorkflowRail label={guide.example} steps={guide.steps} />
             </details>
-          }>
-            <p>{guide.goal}</p>
-          </MascotGuide>}
+          </section>}
           {(topics.length > 0 || milestones.length > 0) && (
             <Card title="Linked" pad={false}>
               <ul className="ws-list">
