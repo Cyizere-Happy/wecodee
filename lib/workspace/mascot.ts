@@ -1,8 +1,8 @@
+import { videoSrc } from "@/lib/videos";
 /**
  * Every mascot appearance in the workspace comes from the existing artwork in
  * /public (see README › Artwork). Nothing here is redrawn or re-coloured.
  */
-const encoded = (name: string) => encodeURI("/" + name);
 
 /** Full-body stills on pure white. */
 export const stills = {
@@ -39,10 +39,10 @@ export const scenes = {
 } as const;
 
 export const clips = {
-  preparing: { src: encoded("Mascot_preparing_workspace_45c86e8d_1080p.mp4"), poster: "/posters/auth/signup-poster.webp", label: "The WeCodee sheep sets up a laptop and desk for you." },
-  cards: { src: encoded("Sheep_mascot_organizing_floating…_06022653_1080p.mp4"), poster: "/posters/hero-start.webp", label: "The WeCodee sheep arranges floating learning cards." },
-  path: { src: encoded("Mascot_navigating_milestone_path…_cc7de657_1080p.mp4"), poster: "/posters/path-start.webp", label: "The sheep follows a red path, checking off a document, a wireframe and code." },
-  launch: { src: encoded("Mascot_launching_paper_airplane_0c58da8a_1080p.mp4"), poster: "/posters/launch-start.webp", label: "The sheep throws a red paper airplane carrying an idea, a blueprint and an app." },
+  preparing: { src: videoSrc("signup"), poster: "/posters/auth/signup-poster.webp", label: "The WeCodee sheep sets up a laptop and desk for you." },
+  cards: { src: videoSrc("cards"), poster: "/posters/hero-start.webp", label: "The WeCodee sheep arranges floating learning cards." },
+  path: { src: videoSrc("path"), poster: "/posters/path-start.webp", label: "The sheep follows a red path, checking off a document, a wireframe and code." },
+  launch: { src: videoSrc("launch"), poster: "/posters/launch-start.webp", label: "The sheep throws a red paper airplane carrying an idea, a blueprint and an app." },
 } as const;
 
 export type StillName = keyof typeof stills;
