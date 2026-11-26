@@ -45,12 +45,12 @@ export function Mascot({ art, still, scene, alt, className = "", style }: { art?
   );
 }
 
-export function EmptyState({ art, still, scene, title, children, actions, compact, heading: Heading = "h3" }: {
-  art?: ArtName; still?: StillName; scene?: SceneName; title: string; children?: ReactNode; actions?: ReactNode; compact?: boolean; heading?: "h1" | "h3";
+export function EmptyState({ art, still, scene, title, children, actions, compact, heading: Heading = "h3", showArt = true }: {
+  art?: ArtName; still?: StillName; scene?: SceneName; title: string; children?: ReactNode; actions?: ReactNode; compact?: boolean; heading?: "h1" | "h3"; showArt?: boolean;
 }) {
   return (
     <div className={"ws-empty" + (compact ? " ws-empty-compact" : "")}>
-      <Mascot art={art} still={still} scene={scene} />
+      {showArt && <Mascot art={art} still={still} scene={scene} />}
       <Heading>{title}</Heading>
       {children && <p>{children}</p>}
       {actions && <div className="ws-actions">{actions}</div>}
@@ -70,11 +70,11 @@ export function Tip({ still = "mark", title, children, action }: { still?: Still
   );
 }
 
-export function Card({ title, action, children, footer, pad = true, className = "" }: {
-  title?: ReactNode; action?: ReactNode; children: ReactNode; footer?: ReactNode; pad?: boolean; className?: string;
+export function Card({ title, action, children, footer, pad = true, className = "", id }: {
+  title?: ReactNode; action?: ReactNode; children: ReactNode; footer?: ReactNode; pad?: boolean; className?: string; id?: string;
 }) {
   return (
-    <section className={"ws-card " + className}>
+    <section id={id} className={"ws-card " + className}>
       {(title || action) && <div className="ws-card-head">{typeof title === "string" ? <h2 className="ws-h3">{title}</h2> : title}{action}</div>}
       {pad ? <div className="ws-card-body">{children}</div> : children}
       {footer && <div className="ws-card-foot">{footer}</div>}

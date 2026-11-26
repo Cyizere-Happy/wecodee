@@ -46,9 +46,7 @@ export function TopicVideo({ url, title, lowData }: { url: string; title: string
     return (
       <div className="ws-video" style={{ background: "#fafafa" }}>
         <div className="ws-video-cover" style={{ cursor: "default" }}>
-          <span className="ws-mascot" data-scene="">{/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/posters/hero-start.webp" alt="" /></span>
-          <div><strong>Video coming soon</strong><span className="ws-small">An admin hasn’t attached the YouTube link for this topic yet.</span></div>
+          <div><Icon name="play" size={24} /><strong>Video coming soon</strong></div>
         </div>
       </div>
     );
@@ -65,8 +63,8 @@ export function TopicVideo({ url, title, lowData }: { url: string; title: string
         />
       ) : (
         <button type="button" className="ws-video-cover" onClick={() => setPlay(true)}>
-          {!lowData && <span className="ws-mascot" style={{ inset: 0, position: "absolute" }}>{/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={`https://i.ytimg.com/vi/${id}/hqdefault.jpg`} alt="" style={{ objectFit: "cover" }} /></span>}
+          {!lowData && <span className="ws-video-thumbnail">{/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={`https://i.ytimg.com/vi/${id}/hqdefault.jpg`} alt="" /></span>}
           <div><span className="ws-play"><Icon name="play" size={20} /></span><strong>Play video</strong><span className="ws-small">{lowData ? "Low-data mode: the video loads only when you tap." : "Streams from YouTube."}</span></div>
         </button>
       )}

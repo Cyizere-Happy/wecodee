@@ -3,8 +3,8 @@ import type { ArtName } from "@/lib/workspace/mascot";
 import { Icon, type IconName } from "./Icon";
 import { Mascot } from "./ui";
 
-export function MascotGuide({ art, title, children, action, details, compact = false }: {
-  art: ArtName;
+export function MascotGuide({ art = "lessons/presentation", title, children, action, details, compact = false }: {
+  art?: ArtName;
   title: string;
   children: ReactNode;
   action?: ReactNode;
@@ -12,7 +12,7 @@ export function MascotGuide({ art, title, children, action, details, compact = f
   compact?: boolean;
 }) {
   return (
-    <aside className={"ws-guide" + (compact ? " ws-guide-compact" : "")}>
+    <aside className={"ws-guide" + (compact ? " ws-guide-compact" : "")} aria-label="WeCodee guide">
       <div className="ws-guide-copy">
         <h2>{title}</h2>
         <div className="ws-guide-text">{children}</div>

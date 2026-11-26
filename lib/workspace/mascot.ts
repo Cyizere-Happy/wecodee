@@ -50,6 +50,7 @@ export type SceneName = keyof typeof scenes;
 export type ClipName = keyof typeof clips;
 
 export type ArtName =
+  | "lessons/presentation"
   | `milestones/${"problem" | "proposal" | "requirements" | "design" | "implementation" | "testing" | "deployment" | "presentation"}`
   | `learner/${"welcome" | "concept" | "practice" | "lesson" | "prompt" | "quiz" | "team" | "portfolio" | "certificate"}`
   | `states/${"submission" | "received" | "waiting" | "feedback" | "approved" | "project-complete"}`

@@ -5,7 +5,8 @@ import { Badge, EmptyState, PageHeader } from "@/components/workspace/ui";
 import { AutoFilter } from "@/components/workspace/topic";
 import { ActionButton } from "@/components/workspace/forms";
 import { Icon } from "@/components/workspace/Icon";
-import { ArticleCover } from "@/components/workspace/learning/EditorialVisuals";
+import { ArticlePreview } from "@/components/workspace/learning/EditorialVisuals";
+import { MascotGuide } from "@/components/workspace/Guidance";
 
 export const metadata = { title: "Articles" };
 
@@ -26,57 +27,68 @@ export default async function Articles({ searchParams }: { searchParams: Promise
   return (
     <div className="ws-content">
       <PageHeader eyebrow="Learn" title="Articles" />
-      <AutoFilter>
-        <label className="ws-search">
-          <Icon name="search" size={13.5} />
-          <input className="ws-input" type="search" name="q" defaultValue={q} placeholder="Search articles" aria-label="Search articles" />
-        </label>
-        <select className="ws-select" name="category" defaultValue={category} aria-label="Category">
-          <option value="">All categories</option>
-          {categories.map((c) => <option key={c}>{c}</option>)}
-        </select>
-        <select className="ws-select" name="saved" defaultValue={saved} aria-label="Saved">
-          <option value="">All articles</option>
-          <option value="1">Saved articles</option>
-        </select>
-      </AutoFilter>
+      <div className="ws-guided-layout">
+        <MascotGuide title={saved ? "Your saved reads" : "Find something to read"} action={
+          <Link className="ws-quiet-link" href={saved ? "/learner/articles" : "/learner/articles?saved=1"}>
+            {saved ? "Browse all articles" : "View saved articles"}
+          </Link>
+        }>
+          <p>{saved ? "Open a saved article to read it again. Use the category filter to narrow the list." : "The diagrams preview the ideas in each read. Use the save button on an article to find it here again."}</p>
+        </MascotGuide>
+        <div className="ws-guided-content">
+          <AutoFilter>
+            <label className="ws-search">
+              <Icon name="search" size={13.5} />
+              <input className="ws-input" type="search" name="q" defaultValue={q} placeholder="Search articles" aria-label="Search articles" />
+            </label>
+            <select className="ws-select" name="category" defaultValue={category} aria-label="Category">
+              <option value="">All categories</option>
+              {categories.map((c) => <option key={c}>{c}</option>)}
+            </select>
+            <select className="ws-select" name="saved" defaultValue={saved} aria-label="Saved">
+              <option value="">All articles</option>
+              <option value="1">Saved articles</option>
+            </select>
+          </AutoFilter>
 
-      {shown.length ? (
-        <div className="ws-editorial-index">
-          <ul>
-            {shown.map((a) => {
-              const isSaved = data.savedArticles.includes(a.slug);
-              return (
-                <li key={a.slug}>
-                  <div className="ws-editorial-entry">
-                    <Link href={"/learner/articles/" + a.slug}>
-                      <ArticleCover slug={a.slug} />
-                      <h2>{a.title}</h2>
-                    </Link>
-                    <p>{a.excerpt}</p>
-                    <div className="ws-editorial-meta">
-                      <div className="ws-row ws-small ws-muted" style={{ gap: 8 }}>
-                        <span>{a.category} · {a.readingMin} min read</span>
-                        {isSaved && <Badge tone="green">Saved</Badge>}
+          {shown.length ? (
+            <div className="ws-editorial-index">
+              <ul>
+                {shown.map((a) => {
+                  const isSaved = data.savedArticles.includes(a.slug);
+                  return (
+                    <li key={a.slug}>
+                      <div className="ws-editorial-entry">
+                        <Link href={"/learner/articles/" + a.slug}>
+                          <ArticlePreview slug={a.slug} />
+                          <h2>{a.title}</h2>
+                        </Link>
+                        <p>{a.excerpt}</p>
+                        <div className="ws-editorial-meta">
+                          <div className="ws-row ws-small ws-muted" style={{ gap: 8 }}>
+                            <span>{a.category} · {a.readingMin} min read</span>
+                            {isSaved && <Badge tone="green">Saved</Badge>}
+                          </div>
+                          <ActionButton run={toggleSavedArticle.bind(null, a.slug)} variant="ghost" icon={isSaved ? "check" : "download"} tip={isSaved ? "Remove from saved" : "Save article"}>
+                            <span className="ws-sr">{isSaved ? "Remove from saved articles" : "Save article"}</span>
+                            <span className="ws-desktop-only" aria-hidden="true">{isSaved ? "Saved" : "Save"}</span>
+                          </ActionButton>
+                        </div>
                       </div>
-                      <ActionButton run={toggleSavedArticle.bind(null, a.slug)} variant="ghost" icon={isSaved ? "check" : "download"} tip={isSaved ? "Remove from saved" : "Save article"}>
-                        <span className="ws-sr">{isSaved ? "Remove from saved articles" : "Save article"}</span>
-                        <span className="ws-desktop-only" aria-hidden="true">{isSaved ? "Saved" : "Save"}</span>
-                      </ActionButton>
-                    </div>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ) : (
+            <div className="ws-card">
+              <EmptyState showArt={false} title={saved && !q && !category ? "No saved articles yet" : "No articles match"} actions={<Link href="/learner/articles" className="ws-btn ws-btn-secondary ws-btn-sm">Show all articles</Link>}>
+                {saved && !q && !category ? "Save an article while you’re online to read it later without a connection." : "Try another word or category."}
+              </EmptyState>
+            </div>
+          )}
         </div>
-      ) : (
-        <div className="ws-card">
-          <EmptyState still={saved ? "envelope" : "map"} title={saved ? "No saved articles yet" : "No articles match"} actions={<Link href="/learner/articles" className="ws-btn ws-btn-secondary ws-btn-sm">Show all articles</Link>}>
-            {saved ? "Save an article while you’re online to read it later without a connection." : "Try another word or category."}
-          </EmptyState>
-        </div>
-      )}
+      </div>
     </div>
   );
 }

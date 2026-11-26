@@ -11,10 +11,10 @@ This audit follows the App Router routes and the shared states rendered around t
 | `/reset-password` | Replace a password or recover from an expired link. | Highlight the current step in recovery and give expired links a direct route back. | Existing lock and hourglass art | Implemented |
 | `/verify-email` | Open or resend a confirmation link. Form and receipt can look alike. | Connect the account to the email confirmation and sign-in stages. | Existing envelope and verified art | Implemented |
 | `/workspace` | Reach the workspace for the signed-in role. | Direct routing with no intermediate screen. | Server redirect | Existing |
-| `/learner` | Identify the next action and progress. Counts can read as disconnected. | Keep the state-aware next step and connect learning, placement and project progress. | Existing mascot guidance and milestone path | Implemented |
-| `/learner/hot-topics` | Pick a topic or return to one. Text-first entries look alike. | Lead with large illustrated covers and concept trails, with completion and duration beside each title. | Ten topic-specific covers and progress filters | Implemented |
-| `/learner/hot-topics/[id]` | Understand a concept, finish the lesson and try it. The same flow leads every topic. | Open with a topic-specific exercise, then show lesson completion and the remaining actions. | Eight milestone studios, form interaction and SQL join comparison | Implemented |
-| `/learner/articles` | Find a short read or return to a saved one. List rows carry little visual meaning. | Use large illustrated covers and keep one concise line of reading metadata. | Subject-specific covers and save controls | Implemented |
+| `/learner` | Identify the next action and progress. Counts can read as disconnected. | Place the mascot guide beside the dashboard cards with a state-aware next action and links that explain each section. | Presenter pose and milestone path | Implemented |
+| `/learner/hot-topics` | Pick a topic or return to one. Learners need to see what each lesson covers and how to resume it. | Give cards concept diagrams and position the mascot guide beside the catalogue to explain filters and progress. | Ten topic-specific diagrams and progress filters | Implemented |
+| `/learner/hot-topics/[id]` | Understand a concept, finish the lesson and try it. The same flow leads every topic. | Open with a topic-specific exercise and place the mascot guide beside the video, practice, and check questions. | Eight milestone studios, form interaction and SQL join comparison | Implemented |
+| `/learner/articles` | Find a short read or return to a saved one. List rows carry little visual meaning. | Preview each subject with a short diagram. The mascot guide beside the articles explains saving and finding them. | Subject-specific previews and save controls | Implemented |
 | `/learner/articles/[slug]` | Apply a written concept. Examples sit apart from the prose. | Place evidence, measurable requirements, low-data choices or AI coaching beside the associated paragraphs. | Native comparisons and AI editorial art | Implemented |
 | `/learner/events` | Find and register for a session. Upcoming dates are buried in labels. | Give the next session an illustrated reservation scene. Use date markers and capacity for quick comparisons. | Event-seat illustration, calendar dates and capacity meter | Implemented |
 | `/learner/quiz` | Understand the quiz, answer questions and see placement. Progress and scoring are text-heavy. | Practice scenario outside the exam, question progress during it and skill thresholds after it. | Native simulation and quiz progress | Implemented |
@@ -68,8 +68,8 @@ The built-in GPT Image tool used the source references listed below. The WebP fi
 | `portfolio-shelf.webp` | Private and public portfolio showcase | `lessons/presentation.webp`, `learner/portfolio.webp` | 66 KB |
 | `report-empty.webp` | Reporting before team placement | `lessons/srs-interface.webp`, `states/waiting.webp` | 55 KB |
 | `review-filed.webp` | Confirmation after saving a review decision | `lessons/srs-interface.webp`, `supervisor/decision.webp` | 48 KB |
-| `data-joins.webp` | SQL topic cover and interactive row matching | `lessons/srs-interface.webp`, `lessons/architecture.webp` | 71 KB |
-| `small-data.webp` | Low-data article cover and comparison | `lessons/srs-interface.webp`, `lessons/implementation.webp` | 56 KB |
+| `data-joins.webp` | SQL lesson’s interactive row matching | `lessons/srs-interface.webp`, `lessons/architecture.webp` | 71 KB |
+| `small-data.webp` | Low-data article’s inline comparison | `lessons/srs-interface.webp`, `lessons/implementation.webp` | 56 KB |
 | `event-seat.webp` | The next upcoming live session | `lessons/srs-interface.webp`, `learner/lesson.webp` | 76 KB |
 
 ### Shared prompt for learning and showcase illustrations

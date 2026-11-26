@@ -11,6 +11,7 @@ import { Icon } from "@/components/workspace/Icon";
 import { WorkflowRail } from "@/components/workspace/learning/WorkflowRail";
 import { TopicExperiment } from "@/components/workspace/learning/EditorialVisuals";
 import { ChecklistProgress } from "@/components/workspace/VisualSummary";
+import { MascotGuide } from "@/components/workspace/Guidance";
 
 // Session-bound page: allowed to block on navigation (see the dashboard layout).
 export const instant = false;
@@ -37,16 +38,19 @@ export default async function HotTopic({ params }: { params: Promise<{ id: strin
 
       <TopicExperiment id={id} />
 
-      <div className="ws-priority">
-        <WorkflowRail label="Work through this Hot Topic" steps={[
-          topic.youtubeUrl ? { label: "Watch the lesson", detail: <QuietLink href="#topic-lesson">Open video</QuietLink>, icon: "play" } : { label: "Read the overview", detail: "Video pending", icon: "book" },
-          { label: "Try it yourself", detail: <QuietLink href="#topic-practice">{p.promptCopiedAt ? "Prompt copied" : "Open coaching prompt"}</QuietLink>, icon: "edit" },
-          { label: "Check understanding", detail: <QuietLink href="#topic-checks">{p.attempts ? `${p.attempts} attempt${p.attempts === 1 ? "" : "s"} recorded` : "Answer the questions"}</QuietLink>, icon: "quiz", state: p.attempts ? "complete" : undefined },
-        ]} />
-      </div>
-
-      <div className="ws-grid-2">
-        <div className="ws-stack">
+      <div className="ws-grid-2 ws-topic-workspace">
+        <MascotGuide compact title="Work through this lesson" details={
+          <div className="ws-lesson-guide-links">
+            <WorkflowRail label="Work through this Hot Topic" steps={[
+              topic.youtubeUrl ? { label: "Watch the lesson", detail: <a className="ws-quiet-link" href="#topic-lesson">Open video</a>, icon: "play" } : { label: "Video coming soon", icon: "play" },
+              { label: "Try it yourself", detail: <a className="ws-quiet-link" href="#topic-practice">Open the practice task</a>, icon: "edit" },
+              { label: "Check understanding", detail: <a className="ws-quiet-link" href="#topic-checks">{p.attempts ? "Review the questions" : "Answer the questions"}</a>, icon: "quiz", state: p.attempts ? "complete" : undefined },
+            ]} />
+          </div>
+        }>
+          <p>Use the practice task to try the idea, then check what you understood. Your progress appears here.</p>
+        </MascotGuide>
+        <div className="ws-stack ws-topic-activities">
           <div id="topic-lesson" className="ws-lesson-anchor"><TopicVideo url={topic.youtubeUrl} title={topic.title} lowData={data.profile.lowDataMode} /></div>
 
           <section className="ws-practice ws-lesson-anchor" id="topic-practice" aria-labelledby="topic-practice-title">
@@ -64,7 +68,7 @@ export default async function HotTopic({ params }: { params: Promise<{ id: strin
           </Card></div>
         </div>
 
-        <div className="ws-stack">
+        <div className="ws-stack ws-topic-progress">
           <Card title="Your progress">
             <ChecklistProgress label="Lesson activity" items={[
               { label: "Opened", complete: Boolean(p.viewedAt), detail: p.viewedAt ? formatDate(p.viewedAt) : undefined },

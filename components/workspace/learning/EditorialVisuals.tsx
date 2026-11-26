@@ -1,47 +1,47 @@
 import type { ReactNode } from "react";
 import Image from "next/image";
-import { Icon } from "../Icon";
+import { Icon, type IconName } from "../Icon";
 import { CoachingExperiment, FormExperiment, JoinExperiment } from "./TopicExperiments";
 import { MilestoneStudio } from "./MilestoneStudios";
 import { RequirementsStudio } from "./RequirementsStudio";
 import { WorkflowRail } from "./WorkflowRail";
 
+type PreviewStep = readonly [label: string, icon: IconName];
+
 const topicNarratives = {
-  "find-a-real-problem": { order: 1, art: "lessons/observation", path: ["Listen", "Find evidence", "Define the problem"] },
-  "write-a-proposal": { order: 2, art: "milestones/proposal", path: ["Set the objective", "Draw a boundary", "Plan the work"] },
-  "srs-basics": { order: 3, art: "milestones/requirements", path: ["Read the request", "Specify", "Make it testable"] },
-  "system-design": { order: 4, art: "milestones/design", path: ["Interface", "Service", "Data"] },
-  "build-in-slices": { order: 5, art: "milestones/implementation", path: ["Branch", "Build one slice", "Review"] },
-  "testing-basics": { order: 6, art: "milestones/testing", path: ["Run the case", "Fix", "Re-test"] },
-  "deploy-free": { order: 7, art: "lessons/release", path: ["Build", "Host", "Open the URL"] },
-  "present-your-project": { order: 8, art: "milestones/presentation", path: ["Problem", "Demo", "Retrospective"] },
-  "html-forms": { order: null, art: "stories/form-label", path: ["Label", "Field", "Feedback"] },
-  "sql-joins": { order: null, art: "stories/data-joins", path: ["Learners", "Memberships", "Join result"] },
-} satisfies Record<string, { order: number | null; art: string; path: string[] }>;
+  "find-a-real-problem": { order: 1, path: [["Listen", "users"], ["Find evidence", "search"], ["Define the problem", "file"]] },
+  "write-a-proposal": { order: 2, path: [["Set the objective", "flag"], ["Draw a boundary", "panel"], ["Plan the work", "calendar"]] },
+  "srs-basics": { order: 3, path: [["Read the request", "inbox"], ["Specify", "clipboard"], ["Make it testable", "quiz"]] },
+  "system-design": { order: 4, path: [["Interface", "panel"], ["Service", "settings"], ["Data", "file"]] },
+  "build-in-slices": { order: 5, path: [["Branch", "copy"], ["Build one slice", "edit"], ["Review", "eye"]] },
+  "testing-basics": { order: 6, path: [["Run the case", "play"], ["Fix", "edit"], ["Re-test", "check"]] },
+  "deploy-free": { order: 7, path: [["Build", "settings"], ["Host", "inbox"], ["Open the URL", "external"]] },
+  "present-your-project": { order: 8, path: [["Problem", "search"], ["Demo", "play"], ["Retrospective", "history"]] },
+  "html-forms": { order: null, path: [["Label", "link"], ["Field", "panel"], ["Feedback", "check"]] },
+  "sql-joins": { order: null, path: [["Learners", "users"], ["Memberships", "link"], ["Join result", "file"]] },
+} satisfies Record<string, { order: number | null; path: PreviewStep[] }>;
 
 function topicNarrative(id: string) {
   return Object.hasOwn(topicNarratives, id) ? topicNarratives[id as keyof typeof topicNarratives] : undefined;
 }
 
-function CatalogArt({ art, className }: { art: string; className: string }) {
+function ConceptPreview({ label, steps }: { label: string; steps: readonly PreviewStep[] }) {
   return (
-    <div className={className}>
-      <Image alt="" src={`/illustrations/mascot/${art}.webp`} fill sizes="(max-width: 640px) 100vw, 38vw" unoptimized />
-    </div>
+    <ol className="ws-concept-preview" aria-label={label}>
+      {steps.map(([name, icon]) => (
+        <li key={name}>
+          <span className="ws-concept-icon"><Icon name={icon} size={21} /></span>
+          <span>{name}</span>
+        </li>
+      ))}
+    </ol>
   );
 }
 
 export function TopicTrail({ id, fallback }: { id: string; fallback: string }) {
   const topic = topicNarrative(id);
   if (!topic) return <p className="ws-small ws-muted">{fallback}</p>;
-  return (
-    <div className="ws-topic-trail">
-      <CatalogArt art={topic.art} className="ws-topic-cover" />
-      <ol aria-label="Concept in this lesson">
-        {topic.path.map((part, index) => <li key={part}>{index > 0 && <Icon name="chevronRight" size={10} />}{part}</li>)}
-      </ol>
-    </div>
-  );
+  return <ConceptPreview label="What you’ll do" steps={topic.path} />;
 }
 
 export function TopicExperiment({ id }: { id: string }) {
@@ -52,17 +52,21 @@ export function TopicExperiment({ id }: { id: string }) {
   return order ? <MilestoneStudio order={order} /> : null;
 }
 
-const articleVisuals: Record<string, { art: string; after: number }> = {
-  "interview-before-you-build": { art: "lessons/observation", after: 2 },
-  "testable-requirements": { art: "lessons/srs-spec", after: 1 },
-  "low-data-workflow": { art: "stories/small-data", after: 1 },
-  "ai-as-a-tutor": { art: "stories/ai-review", after: 1 },
-  "demo-day-checklist": { art: "lessons/presentation", after: 0 },
-};
+const articleVisuals = {
+  "interview-before-you-build": { after: 2, path: [["Assumption", "help"], ["Interview", "users"], ["Evidence", "file"]] },
+  "testable-requirements": { after: 1, path: [["“Fast”", "help"], ["“Under 2 seconds”", "clock"]] },
+  "low-data-workflow": { after: 1, path: [["Repository", "copy"], ["Pull new commits", "download"]] },
+  "ai-as-a-tutor": { after: 1, path: [["Ask for a hint", "help"], ["Try a fix", "edit"], ["Re-test", "quiz"]] },
+  "demo-day-checklist": { after: 0, path: [["Test live", "external"], ["Record a backup", "play"]] },
+} satisfies Record<string, { after: number; path: PreviewStep[] }>;
 
-export function ArticleCover({ slug }: { slug: string }) {
-  const art = articleVisuals[slug]?.art;
-  return art ? <CatalogArt art={art} className="ws-article-cover" /> : <span className="ws-article-cover ws-article-cover-empty"><Icon name="book" size={34} /></span>;
+function articleVisual(slug: string) {
+  return Object.hasOwn(articleVisuals, slug) ? articleVisuals[slug as keyof typeof articleVisuals] : undefined;
+}
+
+export function ArticlePreview({ slug }: { slug: string }) {
+  const visual = articleVisual(slug);
+  return visual ? <ConceptPreview label="What this article covers" steps={visual.path} /> : null;
 }
 
 function Comparison({ label, before, after }: { label: string; before: ReactNode; after: ReactNode }) {
@@ -82,7 +86,7 @@ function ArticleFigure({ slug }: { slug: string }) {
       return <Comparison label="A tester needs a condition and a limit" before={<div><small>Vague</small><blockquote>“The app should be fast.”</blockquote></div>} after={<div><small>Testable</small><blockquote>“Search results appear within <mark>two seconds</mark> on a <mark>4G connection</mark>.”</blockquote></div>} />;
     case "low-data-workflow":
       return <>
-        <CatalogArt art="stories/small-data" className="ws-article-inline-art" />
+        <Image alt="" src="/illustrations/mascot/stories/small-data.webp" className="ws-article-inline-art" width={900} height={450} unoptimized />
         <Comparison label="Update the same project with less data" before={<div><small>Re-download</small><strong>Fetch the entire repository</strong><span className="ws-data-blocks" aria-hidden="true"><i /><i /><i /><i /><i /></span></div>} after={<div><small>Pull changes</small><strong>Fetch the missing changes</strong><span className="ws-data-blocks" data-small="true" aria-hidden="true"><i /><i /></span></div>} />
       </>;
     case "ai-as-a-tutor":
@@ -95,7 +99,7 @@ function ArticleFigure({ slug }: { slug: string }) {
 }
 
 export function EditorialArticle({ slug, paragraphs }: { slug: string; paragraphs: readonly string[] }) {
-  const placement = articleVisuals[slug];
+  const placement = articleVisual(slug);
   return (
     <article className="ws-editorial-article">
       <div className="ws-prose ws-illustrated-prose">
