@@ -9,8 +9,9 @@
   border-block: 1px solid var(--ws-border);
 }
 .ws-milestone-tools nav, .ws-milestone-topic { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
-.ws-milestone-topic > svg { color: var(--ws-red); }
 .ws-milestone-topic a { font-weight: 620; }
+.ws-step-dot { flex: none; }
+.ws-step-dot[data-done] { background: var(--ws-ink); border-color: var(--ws-ink); color: #fff; }
 .ws-milestone-notice { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; margin: 0 0 18px; padding: 9px 0; border-bottom: 1px solid var(--ws-border); }
 .ws-milestone-notice > svg { flex: none; color: var(--ws-red); }
 .ws-milestone-notice p { color: var(--ws-muted); }
@@ -106,7 +107,7 @@
 .ws-lesson:not(:has(.ws-lesson-opening)) .ws-lesson-heading h2 { max-width: none; font-size: clamp(1.7rem, 2.9vw, 2.65rem); }
 .ws-lesson:not(:has(.ws-lesson-opening)) .ws-lesson-heading > div { max-width: 68ch; }
 .ws-lesson-caption { color: var(--ws-muted); margin-top: 10px; max-width: 80ch; }
-.ws-evidence, .ws-scope-top, .ws-test-bench, .ws-architecture-board, .ws-pipeline {
+.ws-evidence, .ws-scope-top, .ws-test-bench, .ws-pipeline {
   display: grid;
   grid-template-columns: minmax(120px, .46fr) minmax(0, 1.54fr);
   align-items: center;
@@ -129,16 +130,19 @@
 .ws-scope-rail li[data-current="true"] { background: var(--ws-red-soft); }
 .ws-scope-rail li strong { font-size: .75rem; font-weight: 630; }
 .ws-scope-rail li span { color: var(--ws-muted); font-size: .69rem; }
-.ws-architecture-board { row-gap: 0; }
-.ws-architecture-board > .ws-lesson-art { overflow: hidden; aspect-ratio: 1.45; }
-.ws-architecture-board > .ws-lesson-art img { transform: scale(1.36); transform-origin: left center; }
-.ws-request { grid-column: 2; }
-.ws-request-nodes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
-.ws-request-nodes li { display: flex; align-items: center; flex-wrap: wrap; justify-content: center; gap: 6px; padding: 7px 3px; font-weight: 620; font-size: .75rem; border: 1px solid var(--ws-border-strong); background: #fff; border-radius: var(--ws-radius-sm); }
-.ws-request-nodes li[data-current="true"] { border-color: var(--ws-red); color: var(--ws-red-ink); background: var(--ws-red-soft); }
-.ws-request-route { display: block; width: 100%; height: 23px; fill: none; stroke: var(--ws-border-strong); stroke-width: 2; }
-.ws-request-route .ws-request-packet { stroke: var(--ws-red); stroke-dasharray: 1; animation: ws-lesson-link 650ms var(--ws-ease) both; }
-.ws-request-current { min-height: 86px; border-top: 1px solid var(--ws-border); padding-top: 7px; }
+.ws-architecture-board { display: grid; grid-template-columns: minmax(0, .72fr) minmax(0, 1.28fr); align-items: center; gap: clamp(12px, 2vw, 28px); margin-top: clamp(12px, 3vw, 28px); }
+.ws-architecture-board > .ws-lesson-art { overflow: hidden; aspect-ratio: 1.21; }
+.ws-architecture-board > .ws-lesson-art img { position: absolute; width: 200%; max-width: none; height: auto; left: -4%; top: 50%; transform: translateY(-50%); }
+.ws-request { min-width: 0; }
+.ws-request-nodes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(5px, 1vw, 11px); }
+.ws-request-nodes button { display: grid; align-content: center; justify-items: center; width: 100%; min-height: clamp(76px, 10vw, 116px); gap: 6px; padding: 7px 3px; font-weight: 650; font-size: clamp(.72rem, 1.25vw, 1rem); border: 1px solid var(--ws-border-strong); background: #fff; border-radius: var(--ws-radius); cursor: pointer; }
+.ws-request-nodes button:hover, .ws-request-nodes button[aria-current="step"] { border-color: var(--ws-red); color: var(--ws-red-ink); background: var(--ws-red-soft); }
+.ws-request-route { display: block; width: 100%; height: 34px; fill: none; stroke: var(--ws-border-strong); stroke-width: 2px; stroke-linecap: round; }
+.ws-request-route .ws-request-packet { stroke: var(--ws-red); stroke-width: 3px; stroke-dasharray: 1; animation: ws-lesson-link 650ms var(--ws-ease) both; }
+.ws-request-current { display: grid; gap: 7px; padding: 11px 0; border-top: 1px solid var(--ws-border); }
+.ws-request-example { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; color: var(--ws-red-ink); }
+.ws-request-example strong { padding: 7px 10px; border-radius: var(--ws-radius-sm); background: var(--ws-red-soft); }
+.ws-request-example strong:first-child { background: var(--ws-surface); color: var(--ws-ink); }
 .ws-request-current h3, .ws-release-readout h3 { font-size: 1.04rem; font-weight: 630; margin-block: 3px; }
 .ws-request-current p:last-child, .ws-release-readout p { color: var(--ws-muted); margin-bottom: 7px; }
 .ws-implementation-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0 12px; }
@@ -233,8 +237,8 @@
   .ws-lesson-compare, .ws-rewrite { grid-template-columns: 1fr; gap: 10px; }
   .ws-lesson-chapter { padding-block: 15px 18px; }
   .ws-evidence, .ws-scope-top, .ws-architecture-board, .ws-test-bench, .ws-pipeline { grid-template-columns: minmax(0, 1fr); gap: 9px; }
-  .ws-request { grid-column: 1; }
-  .ws-evidence-art, .ws-scope-art, .ws-architecture-board > .ws-lesson-art, .ws-pipeline > .ws-lesson-art, .ws-test-fixture { width: min(52%, 150px); justify-self: start; }
+  .ws-architecture-board > .ws-lesson-art { width: min(100%, 265px); justify-self: center; }
+  .ws-evidence-art, .ws-scope-art, .ws-pipeline > .ws-lesson-art, .ws-test-fixture { width: min(52%, 150px); justify-self: start; }
   .ws-evidence-ledger { padding: 10px; }
   .ws-evidence-ledger dl, .ws-scope-brief dl { grid-template-columns: 1fr; gap: 8px; }
   .ws-scope-rail li { padding: 6px; }

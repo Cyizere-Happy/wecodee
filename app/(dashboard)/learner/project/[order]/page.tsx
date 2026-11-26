@@ -12,6 +12,8 @@ import { Icon } from "@/components/workspace/Icon";
 import { RequirementsStudio } from "@/components/workspace/learning/RequirementsStudio";
 import { ChecklistProgress } from "@/components/workspace/VisualSummary";
 import { MilestoneStudio } from "@/components/workspace/learning/MilestoneStudios";
+import { VisualSequence } from "@/components/workspace/Guidance";
+import { GuideDialog } from "@/components/workspace/GuideDialog";
 
 const exampleSrsFeedback = "Good structure. FR-4 and FR-9 aren't testable yet: add measurable conditions. Please also add non-functional requirements for data use on phones.";
 
@@ -32,6 +34,12 @@ export default async function MilestonePage({ params }: { params: Promise<{ orde
   const articles = data.articles.filter((a) => a.published && a.milestoneOrders.includes(order));
   const open = milestone.status === "open" || milestone.status === "changes_requested";
   const confirmed = new Map(milestone.pendingContributions.map((c) => [c.userId, c.text]));
+  const yourContribution = confirmed.get(viewer.id);
+  const confirmationCount = team.members.filter((member) => confirmed.has(member.userId)).length;
+  const teamConfirmed = confirmationCount === team.members.length;
+  const contributionField = "milestone-contribution-input";
+  const submissionField = "milestone-submission-link";
+  const submitTitle = leader ? "Submit for review" : "Your leader submits";
   const latest = milestone.submissions.at(-1);
   const overdue = isOverdue(milestone);
   const guide = milestoneGuide(order, milestone.name);
@@ -63,13 +71,19 @@ export default async function MilestonePage({ params }: { params: Promise<{ orde
       {!locked && (
         <section className="ws-milestone-tools" aria-label="Milestone actions">
           {open && <div className="ws-milestone-topic">
-            <Icon name="play" size={18} />
+            <StepDot n={1} done={milestone.topicWatched} />
             <div>
               <p className="ws-lesson-label">Linked Hot Topic</p>
               {topic ? <Link href={"/learner/hot-topics/" + topic.id} className="ws-link">{topic.title}</Link> : <p>No Hot Topic is linked.</p>}
               {topic && <p className="ws-small ws-muted">{Math.ceil(topic.durationSec / 60)} min · {topic.category}</p>}
             </div>
             {topic && (milestone.topicWatched ? <Badge tone="green">Watched</Badge> : <ActionButton run={markMilestoneTopicWatched.bind(null, order)} variant="primary">Mark as watched</ActionButton>)}
+            {topic && <GuideDialog showMascot label="Show me how to watch the linked Hot Topic" title="Start with the linked Hot Topic" art="learner/lesson" action={{ label: "Open Hot Topic", href: `/learner/hot-topics/${topic.id}` }}>
+              <VisualSequence label="Hot Topic steps" steps={[
+                { label: "Watch the lesson", detail: topic.title, icon: "play", state: milestone.topicWatched ? "done" : "current" },
+                { label: "Mark as watched", detail: "Come back here to mark it. This unlocks submission.", icon: "check", state: milestone.topicWatched ? "done" : "pending" },
+              ]} />
+            </GuideDialog>}
           </div>}
           <nav aria-label="Jump to milestone work">
             {open && <a href="#milestone-contributions" className="ws-quiet-link">Contributions</a>}
@@ -116,7 +130,14 @@ export default async function MilestonePage({ params }: { params: Promise<{ orde
                 </section>
             )}
 
-                <div id="milestone-contributions" className="ws-lesson-anchor"><Card title={<StepTitle n={2} done={team.members.every((m) => confirmed.has(m.userId))} title="Everyone confirms their contribution" />}>
+                <div id="milestone-contributions" className="ws-lesson-anchor"><Card title={<StepTitle n={2} done={teamConfirmed} title="Everyone confirms their contribution" />} action={
+                  <GuideDialog showMascot label="Show me how to confirm my contribution" title="Confirm your contribution" art="learner/team" action={{ label: yourContribution ? "Edit my contribution" : "Write my contribution", focusId: contributionField }}>
+                    <VisualSequence label="Contribution steps" steps={[
+                      { label: "Write what you did", detail: srs ? "Example: I rewrote two requirements so the team can test them." : "Example: I revised the deliverable and checked it against the milestone checklist.", icon: "clipboard", state: yourContribution ? "done" : "current" },
+                      { label: "Check team confirmations", detail: `${confirmationCount} of ${team.members.length} confirmed. Each teammate fills in their own contribution.`, icon: "users", state: teamConfirmed ? "done" : "pending" },
+                    ]} />
+                  </GuideDialog>
+                }>
                   <ChecklistProgress label="Team confirmations" items={team.members.map((member) => ({
                     label: member.userId === viewer.id ? "You" : personById(data, member.userId)?.name ?? "Team member",
                     complete: confirmed.has(member.userId),
@@ -136,19 +157,29 @@ export default async function MilestonePage({ params }: { params: Promise<{ orde
                   <div className="ws-divider" />
                   <ActionForm action={confirmContribution}>
                     <input type="hidden" name="order" value={order} />
-                    <TextArea label={confirmed.has(viewer.id) ? "Update your contribution" : "Your contribution"} name="contribution" rows={2} maxLength={200} defaultValue={confirmed.get(viewer.id)} placeholder="One or two lines on what you did for this milestone." />
+                    <TextArea id={contributionField} label={yourContribution ? "Update your contribution" : "Your contribution"} name="contribution" rows={2} maxLength={200} defaultValue={yourContribution} placeholder="One or two lines on what you did for this milestone." />
                     <div><Submit size="sm" variant="secondary">Confirm</Submit></div>
                   </ActionForm>
                 </Card></div>
 
-                <div id="milestone-submit" className="ws-lesson-anchor"><Card title={<StepTitle n={3} done={false} title={leader ? "Submit for review" : "Your leader submits"} />}>
+                <div id="milestone-submit" className="ws-lesson-anchor"><Card title={<StepTitle n={3} done={false} title={submitTitle} />} action={
+                  <GuideDialog showMascot label={`Show me how ${leader ? "to submit for review" : "my team submits"}`} title={submitTitle} art="states/submission" action={
+                    leader ? { label: "Go to submission", focusId: submissionField } : yourContribution ? undefined : { label: "Write my contribution", focusId: contributionField }
+                  }>
+                    <VisualSequence label="Before submitting" steps={[
+                      { label: "Watch the Hot Topic", icon: "play", state: milestone.topicWatched ? "done" : "pending" },
+                      { label: "Confirm contributions", detail: `${confirmationCount} of ${team.members.length} confirmed`, icon: "users", state: teamConfirmed ? "done" : "pending" },
+                      { label: "Send the deliverable", detail: leader ? "Add a link or file and declare how you used AI." : "Your leader sends the work to your supervisor.", icon: "file", state: milestone.topicWatched && teamConfirmed ? "current" : "pending" },
+                    ]} />
+                  </GuideDialog>
+                }>
                   {leader ? (
                     <ActionForm action={submitMilestone} successArt="states/received">
-                      {milestone.topicWatched && team.members.every((member) => confirmed.has(member.userId)) && (
+                      {milestone.topicWatched && teamConfirmed && (
                         <p className="ws-small ws-muted">Topic and contributions are complete. Attach your deliverable and tell your supervisor what to look for.</p>
                       )}
                       <input type="hidden" name="order" value={order} />
-                      <Field label="Link" name="link" type="url" placeholder="Google Docs, GitHub or a live URL" help="A link, a file, or both." />
+                      <Field id={submissionField} label="Link" name="link" type="url" placeholder="Google Docs, GitHub or a live URL" help="A link, a file, or both." />
                       <Field label="File (optional)" name="file" type="file" accept=".pdf,.docx,.zip" help="PDF, DOCX or ZIP, up to 10 MB." />
                       <TextArea label="Notes for your supervisor" name="notes" rows={3} maxLength={2000} placeholder={milestone.status === "changes_requested" ? "What did you change since the last version?" : "Anything your supervisor should know."} />
                       <TextArea label="AI-use declaration" name="aiDeclaration" rows={3} maxLength={1000} help="Which AI tools did you use, for what, and what did the team do itself? Honest declarations are never penalised." />
@@ -195,8 +226,15 @@ export default async function MilestonePage({ params }: { params: Promise<{ orde
 function StepTitle({ n, title, done }: { n: number; title: string; done: boolean }) {
   return (
     <div className="ws-row">
-      <span className="ws-step-dot" style={done ? { background: "var(--ws-ink)", borderColor: "var(--ws-ink)", color: "#fff" } : undefined}>{done ? <Icon name="check" size={11} /> : n}</span>
+      <StepDot n={n} done={done} />
       <h2 className="ws-h3">{title}</h2>
     </div>
   );
+}
+
+function StepDot({ n, done }: { n: number; done: boolean }) {
+  return <span className="ws-step-dot" data-done={done || undefined}>
+    <span className="ws-sr">Step {n}{done && ", complete"}</span>
+    <span aria-hidden="true">{done ? <Icon name="check" size={11} /> : n}</span>
+  </span>;
 }

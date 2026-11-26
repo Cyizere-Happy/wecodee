@@ -82,38 +82,43 @@ function Proposal() {
 }
 
 const requestStages = [
-  ["Browser", "Send the selected slot", "The resident chooses a time. The browser sends the appointment ID and selected slot to the service."],
-  ["Application", "Validate and authorize", "The service checks who owns the appointment, then asks the database to reserve the new slot."],
-  ["Database", "Save one reservation", "The database reserves the slot and updates the appointment in one transaction. A conflict leaves the previous booking intact."],
-  ["Back to browser", "Confirm the outcome", "The service returns the new time after a successful save. If the slot was taken, the browser asks the resident to choose again."],
+  { title: "Send the selected slot", detail: "The browser sends the resident’s selection to the application.", example: ["Appointment #204", "Thursday, 09:00"], route: "M0 10H50" },
+  { title: "Validate and authorize", detail: "The application checks ownership before asking the database to reserve the slot.", example: ["Owner verified", "Reserve 09:00"], route: "M50 10H150" },
+  { title: "Save one reservation", detail: "The database saves both changes together. A conflict keeps the original booking.", example: ["Reserve new slot", "Update appointment #204"], route: "M150 10H250" },
+  { title: "Confirm the outcome", detail: "The browser shows the saved time, or asks the resident to pick another if the slot was taken.", example: ["Thursday, 09:00", "Booking updated"], route: "M250 10H50" },
 ] as const;
 
 function Architecture() {
   const [step, setStep] = useState(0);
   const node = step === 3 ? 0 : step;
+  const stage = requestStages[step];
   return (
     <section className="ws-lesson ws-architecture" aria-labelledby="architecture-title">
       <LessonHeading id="architecture-title" scenario={scenario} title="Follow one request.">
-        <p>Trace a reschedule across the browser, application, and stored data. Each component has a different responsibility.</p>
+        <p>Tap a component to see how it moves an appointment.</p>
       </LessonHeading>
       <div className="ws-architecture-board">
         <LessonArt name="architecture" />
-        <div className="ws-request-diagram">
+        <div className="ws-request">
           <ol aria-label="Appointment application components" className="ws-request-nodes">
             {([["panel", "Browser"], ["settings", "Application"], ["book", "Database"]] as const).map(([icon, title], index) => (
-              <li key={title} data-current={node === index}><Icon name={icon} size={19} /><span>{title}</span></li>
+              <li key={title}>
+                <button type="button" aria-current={node === index ? "step" : undefined} aria-controls="architecture-readout" onClick={() => setStep(index)}>
+                  <Icon name={icon} size={36} /><span>{title}</span>
+                </button>
+              </li>
             ))}
           </ol>
           <svg className="ws-request-route" aria-hidden="true" viewBox="0 0 300 20" preserveAspectRatio="none">
-            <path d="M0 10H250" />
-            <path key={step} className="ws-request-packet" d={["M0 10H50", "M50 10H150", "M150 10H250", "M250 10H50"][step]} pathLength="1" />
+            <path d="M0.8 10H250" />
+            <path key={step} className="ws-request-packet" d={stage.route} pathLength="1" />
           </svg>
-        </div>
-        <div className="ws-request">
-          <div className="ws-request-current" aria-live="polite">
-            <p className="ws-lesson-label">{requestStages[step][0]}</p>
-            <h3>{requestStages[step][1]}</h3>
-            <p>{requestStages[step][2]}</p>
+          <div id="architecture-readout" className="ws-request-current" aria-live="polite">
+            <h3>{stage.title}</h3>
+            <div className="ws-request-example">
+              <strong>{stage.example[0]}</strong><Icon name="arrowRight" size={18} /><strong>{stage.example[1]}</strong>
+            </div>
+            <p>{stage.detail}</p>
           </div>
           <button type="button" className="ws-btn ws-btn-secondary ws-btn-sm" onClick={() => setStep((step + 1) % requestStages.length)}>
             {step === 3 ? "Trace again" : "Follow the request"}<Icon name={step === 3 ? "history" : "arrowRight"} size={14} />

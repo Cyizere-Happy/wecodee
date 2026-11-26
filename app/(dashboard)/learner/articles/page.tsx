@@ -33,7 +33,7 @@ export default async function Articles({ searchParams }: { searchParams: Promise
             {saved ? "Browse all articles" : "View saved articles"}
           </Link>
         }>
-          <p>{saved ? "Open a saved article to read it again. Use the category filter to narrow the list." : "The diagrams preview the ideas in each read. Use the save button on an article to find it here again."}</p>
+          <p>{saved ? "Open a saved article to read it again. Use the category filter to narrow the list." : "See the idea in a quick example. Save any article to come back to it."}</p>
         </MascotGuide>
         <div className="ws-guided-content">
           <AutoFilter>
@@ -56,12 +56,13 @@ export default async function Articles({ searchParams }: { searchParams: Promise
               <ul>
                 {shown.map((a) => {
                   const isSaved = data.savedArticles.includes(a.slug);
+                  const titleId = `article-title-${a.slug}`;
                   return (
                     <li key={a.slug}>
                       <div className="ws-editorial-entry">
-                        <Link href={"/learner/articles/" + a.slug}>
+                        <Link href={"/learner/articles/" + a.slug} aria-labelledby={titleId}>
+                          <h2 id={titleId}>{a.title}</h2>
                           <ArticlePreview slug={a.slug} />
-                          <h2>{a.title}</h2>
                         </Link>
                         <p>{a.excerpt}</p>
                         <div className="ws-editorial-meta">

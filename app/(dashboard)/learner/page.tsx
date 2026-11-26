@@ -10,6 +10,7 @@ import { SearchLauncher } from "@/components/workspace/bits";
 import { Icon } from "@/components/workspace/Icon";
 import { MilestonePath } from "@/components/workspace/MilestonePath";
 import { MascotGuide, VisualSequence } from "@/components/workspace/Guidance";
+import { DateTile, StateBreakdown } from "@/components/workspace/VisualSummary";
 
 export const metadata = { title: "Overview" };
 
@@ -26,10 +27,12 @@ export default async function Overview() {
   const events = upcomingEvents(data);
   const nextEvent = events.find((e) => data.registrations.includes(e.id)) ?? events[0];
   const reportedToday = data.reports.some((r) => r.userId === viewer.id && r.date === kigaliDay());
-  const inProgress = data.topics.filter((t) => t.published && data.progress[t.id]?.viewedAt && !data.progress[t.id]?.completedAt);
+  const publishedTopics = data.topics.filter((topic) => topic.published);
+  const completedTopics = publishedTopics.filter((topic) => data.progress[topic.id]?.completedAt).length;
+  const inProgress = publishedTopics.filter((t) => data.progress[t.id]?.viewedAt && !data.progress[t.id]?.completedAt);
   const nextTopic = inProgress[0]
-    ?? data.topics.find((t) => t.published && t.phase === milestone?.order && !data.progress[t.id]?.completedAt)
-    ?? data.topics.find((t) => t.published && !data.progress[t.id]?.completedAt);
+    ?? publishedTopics.find((t) => t.phase === milestone?.order && !data.progress[t.id]?.completedAt)
+    ?? publishedTopics.find((t) => !data.progress[t.id]?.completedAt);
 
   const profileDone = profileComplete(data);
   const quizDone = data.profile.quiz.status === "completed";
@@ -131,6 +134,11 @@ export default async function Overview() {
               </Card>
 
               <Card id="overview-lessons" className="ws-visual-jump" title="Continue learning" action={<QuietLink href="/learner/hot-topics">All Hot Topics</QuietLink>} pad={false}>
+                {publishedTopics.length > 0 && <StateBreakdown label="Your Hot Topic progress" parts={[
+                  { label: "Completed", value: completedTopics, tone: "green" },
+                  { label: "In progress", value: inProgress.length, tone: "red" },
+                  { label: "Not started", value: publishedTopics.length - completedTopics - inProgress.length },
+                ]} />}
                 {inProgress.length ? (
                   <ul className="ws-list">
                     {inProgress.slice(0, 4).map((t) => (
@@ -173,7 +181,7 @@ export default async function Overview() {
                   <ul className="ws-list">
                     {events.slice(0, 3).map((e) => (
                       <li key={e.id}>
-                        <Icon name="calendar" size={14.5} className="ws-faint" />
+                        <DateTile date={e.startsAt} />
                         <div className="ws-list-main"><p>{e.title}</p><p>{formatDateTime(e.startsAt)} · {e.platform}</p></div>
                         {data.registrations.includes(e.id) && <Badge tone="green">Going</Badge>}
                       </li>

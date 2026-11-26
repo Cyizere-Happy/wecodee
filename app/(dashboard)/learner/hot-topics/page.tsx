@@ -45,7 +45,7 @@ export default async function HotTopics({ searchParams }: { searchParams: Promis
 
       <div className="ws-guided-layout">
         <MascotGuide title="Pick your next lesson" action={resume && <Link href={"/learner/hot-topics/" + resume.id} className="ws-quiet-link">Resume {resume.title}</Link>}>
-          <p>Use the diagram to preview a lesson. Choose <strong>In progress</strong> to resume, or filter by project phase to find a lesson for your milestone.</p>
+          <p>Each diagram shows a worked example. Open its card to try the exercise, or choose <strong>In progress</strong> to resume.</p>
         </MascotGuide>
         <div className="ws-guided-content">
           <StateBreakdown label="Progress across all Hot Topics" parts={[
@@ -83,14 +83,15 @@ export default async function HotTopics({ searchParams }: { searchParams: Promis
               {shown.map((t) => {
                 const p = data.progress[t.id];
                 const milestone = data.templates.find((m) => m.order === t.phase);
+                const titleId = `topic-title-${t.id}`;
                 return (
-                  <Link key={t.id} href={"/learner/hot-topics/" + t.id} className="ws-topic-entry">
-                    <TopicTrail id={t.id} fallback={t.summary} />
+                  <Link key={t.id} href={"/learner/hot-topics/" + t.id} className="ws-topic-entry" aria-labelledby={titleId}>
                     <div className="ws-row-between">
                       <span className="ws-small ws-muted">{t.category}</span>
                       {p?.completedAt ? <Badge tone="green">Done</Badge> : p?.viewedAt ? <Badge tone="blue">In progress</Badge> : <Badge plain>{t.level}</Badge>}
                     </div>
-                    <h2 className="ws-h2">{t.title}</h2>
+                    <h2 id={titleId} className="ws-h2">{t.title}</h2>
+                    <TopicTrail id={t.id} fallback={t.summary} />
                     <div className="ws-row ws-small ws-faint" style={{ gap: 14 }}>
                       <span className="ws-row" style={{ gap: 4 }}><Icon name="clock" size={11.5} />{Math.ceil(t.durationSec / 60)} min</span>
                       {milestone && <span className="ws-row" style={{ gap: 4 }}><Icon name="flag" size={11.5} />Milestone {milestone.order}</span>}

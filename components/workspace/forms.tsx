@@ -110,8 +110,9 @@ export function FieldError({ name }: { name: string }) {
 
 type BaseField = { label: ReactNode; name: string; help?: ReactNode; aside?: ReactNode };
 
-export function Field({ label, name, help, aside, ...props }: BaseField & ComponentProps<"input">) {
-  const id = useId();
+export function Field({ label, name, help, aside, id: fieldId, ...props }: BaseField & ComponentProps<"input">) {
+  const fallbackId = useId();
+  const id = fieldId ?? fallbackId;
   const error = useFieldError(name);
   return (
     <div className="ws-field">
@@ -122,8 +123,9 @@ export function Field({ label, name, help, aside, ...props }: BaseField & Compon
   );
 }
 
-export function TextArea({ label, name, help, aside, ...props }: BaseField & ComponentProps<"textarea">) {
-  const id = useId();
+export function TextArea({ label, name, help, aside, id: fieldId, ...props }: BaseField & ComponentProps<"textarea">) {
+  const fallbackId = useId();
+  const id = fieldId ?? fallbackId;
   const error = useFieldError(name);
   return (
     <div className="ws-field">
