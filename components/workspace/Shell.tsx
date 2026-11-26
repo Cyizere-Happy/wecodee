@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore, useTransition, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore, useTransition, type Dispatch, type ReactNode, type SetStateAction } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -21,11 +21,17 @@ export type SearchEntry = { href: string; label: string; group: string; hint?: s
 const roleLabel: Record<Role, string> = { learner: "Learner", supervisor: "Supervisor", admin: "Admin" };
 
 /* ---------- breadcrumb override ---------- */
-const CrumbContext = createContext<(label: string | null) => void>(() => {});
+type PageLabel = { pathname: string; label: string };
+const CrumbContext = createContext<Dispatch<SetStateAction<PageLabel | null>>>(() => {});
 /** Lets a page name the last breadcrumb (for example a Hot Topic's title). */
 export function PageCrumb({ label }: { label: string }) {
+  const pathname = usePathname();
   const set = useContext(CrumbContext);
-  useEffect(() => { set(label); return () => set(null); }, [label, set]);
+  useEffect(() => {
+    const entry = { pathname, label };
+    set(entry);
+    return () => set((current) => current === entry ? null : current);
+  }, [label, pathname, set]);
   return null;
 }
 
@@ -47,6 +53,14 @@ function useOnline() {
   );
 }
 
+const mobileQuery = "(max-width: 810px)";
+
+function subscribeToMobile(cb: () => void) {
+  const query = window.matchMedia(mobileQuery);
+  query.addEventListener("change", cb);
+  return () => query.removeEventListener("change", cb);
+}
+
 function isActive(item: NavItem, pathname: string) {
   return item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(item.href + "/");
 }
@@ -64,13 +78,13 @@ function useStoredList<T>(key: string) {
 
 type Recent = { href: string; label: string; area: string };
 
-/** Pages you opened recently, like Cloudflare's "Recents": a quick way back into deep pages. */
+/** Quick links back to recently visited detail pages. */
 function useRecents(current: Recent | null) {
   const [recents, setRecents] = useStoredList<Recent>("wc-recents");
   useEffect(() => {
     if (!current) return;
     if (recents[0]?.href === current.href && recents[0]?.label === current.label) return;
-    setRecents([current, ...recents.filter((r) => r.href !== current.href)].slice(0, 6));
+    setRecents([current, ...recents.filter((r) => r?.href !== current.href)].slice(0, 6));
   }, [current, recents, setRecents]);
   return recents;
 }
@@ -87,28 +101,6 @@ function NavSection({ id, heading, open, onToggle, children }: { id: string; hea
       </div>
     </div>
   );
-}
-
-/** One indicator slides to the active link instead of each link restyling itself. */
-function useNavIndicator(deps: unknown[]) {
-  const navRef = useRef<HTMLElement>(null);
-  const [box, setBox] = useState<{ top: number; height: number } | null>(null);
-  useEffect(() => {
-    const nav = navRef.current;
-    if (!nav) return;
-    const measure = () => {
-      const active = nav.querySelector<HTMLElement>('.ws-nav-link[aria-current="page"]');
-      const hidden = !active || active.closest('[inert]');
-      setBox(hidden ? null : { top: active.offsetTop, height: active.offsetHeight });
-    };
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(nav.firstElementChild ?? nav);
-    nav.addEventListener("transitionend", measure);
-    return () => { ro.disconnect(); nav.removeEventListener("transitionend", measure); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, deps);
-  return { navRef, box };
 }
 
 function usePopover() {
@@ -142,17 +134,31 @@ export function WorkspaceShell({ viewer, source, journey, counts, search, childr
 
 function ShellFrame({ viewer, source, journey, counts, search, children }: Parameters<typeof WorkspaceShell>[0]) {
   const pathname = usePathname();
+  const mobile = useSyncExternalStore(subscribeToMobile, () => window.matchMedia(mobileQuery).matches, () => false);
   const [collapsed, setCollapsed] = useStoredFlag("wc-sidebar-collapsed");
   const [drawer, setDrawer] = useState(false);
+  const drawerButton = useRef<HTMLButtonElement>(null);
   const [palette, setPalette] = useState(false);
-  const [crumb, setCrumb] = useState<string | null>(null);
+  const [crumb, setCrumb] = useState<PageLabel | null>(null);
+  const [closedActiveSection, setClosedActiveSection] = useState<string | null>(null);
   const online = useOnline();
   const context = contextFor(pathname, viewer.role);
   const contexts = navContexts.filter((c) => c.roles.includes(viewer.role));
+  const collapsedDesktop = !mobile && collapsed;
+  const drawerOpen = mobile && drawer;
+  const closeDrawer = useCallback(() => setDrawer(false), []);
+  const dismissDrawer = useCallback(() => {
+    closeDrawer();
+    drawerButton.current?.focus();
+  }, [closeDrawer]);
 
-  // Close the mobile drawer whenever the route changes.
   const [lastPath, setLastPath] = useState(pathname);
-  if (lastPath !== pathname) { setLastPath(pathname); setDrawer(false); }
+  if (lastPath !== pathname) {
+    setLastPath(pathname);
+    setDrawer(false);
+    setClosedActiveSection(null);
+  }
+  if (!mobile && drawer) setDrawer(false);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -165,38 +171,47 @@ function ShellFrame({ viewer, source, journey, counts, search, children }: Param
   }, []);
 
   useEffect(() => {
-    if (!drawer) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setDrawer(false); };
+    if (!drawerOpen || palette) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") dismissDrawer(); };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [drawer]);
+  }, [drawerOpen, palette, dismissDrawer]);
+
+  const primaryItems = useMemo(() => context.groups.flatMap((g) => g.items).concat(accountItems), [context]);
+  const pageLabel = crumb?.pathname === pathname ? crumb.label : null;
 
   const crumbs = useMemo(() => {
     const list: { href: string; label: string }[] = [{ href: context.root, label: context.label }];
-    const items = context.groups.flatMap((g) => g.items).concat(accountItems);
-    const section = items.filter((i) => i.href !== context.root && isActive(i, pathname)).sort((a, b) => b.href.length - a.href.length)[0];
+    const section = primaryItems.filter((i) => i.href !== context.root && isActive(i, pathname)).sort((a, b) => b.href.length - a.href.length)[0];
     if (section) list.push({ href: section.href, label: section.label });
-    if (crumb && pathname !== section?.href && pathname !== context.root) list.push({ href: pathname, label: crumb });
+    if (pageLabel && pathname !== section?.href && pathname !== context.root) list.push({ href: pathname, label: pageLabel });
     return list;
-  }, [context, pathname, crumb]);
+  }, [context, pathname, primaryItems, pageLabel]);
 
-  const here = crumbs[crumbs.length - 1];
-  const current = useMemo<Recent | null>(() => (here ? { href: pathname, label: here.label, area: context.label } : null), [pathname, here, context.label]);
+  const current = useMemo<Recent | null>(() => (
+    pageLabel && pathname.startsWith(context.root + "/") && !primaryItems.some((item) => item.href === pathname)
+      ? { href: pathname, label: pageLabel, area: context.label }
+      : null
+  ), [pageLabel, pathname, primaryItems, context]);
   const recents = useRecents(current);
-  const otherRecents = recents.filter((r) => r.href !== pathname).slice(0, 5);
+  const otherRecents = recents.filter((r) => (
+    typeof r?.href === "string" && typeof r.label === "string" && r.href.startsWith(context.root + "/")
+    && r.href !== pathname && !primaryItems.some((item) => item.href === r.href)
+  )).slice(0, 5);
 
-  // Collapsed sections are remembered; the section holding the current page always opens.
+  // Open the active section on arrival, then let the user toggle it normally.
   const [closed, setClosed] = useStoredList<string>("wc-nav-closed");
-  // A collapsed sidebar shows icons only, so every section stays open there.
-  const sectionOpen = (id: string, holdsActive: boolean) => collapsed || holdsActive || !closed.includes(id);
-  const toggleSection = (id: string, open: boolean) => setClosed(open ? [...closed, id] : closed.filter((c) => c !== id));
-  const { navRef, box } = useNavIndicator([pathname, closed.join(), collapsed, otherRecents.length, context.id]);
+  const sectionOpen = (id: string, holdsActive: boolean) => collapsedDesktop || (holdsActive && closedActiveSection !== id) || !closed.includes(id);
+  const toggleSection = (id: string, open: boolean, holdsActive = false) => {
+    if (holdsActive) setClosedActiveSection(open ? id : null);
+    setClosed(open ? [...new Set([...closed, id])] : closed.filter((c) => c !== id));
+  };
 
   const renderLink = (item: NavItem) => {
     const count = item.badge ? counts[item.badge] : 0;
     return (
       <li key={item.href}>
-        <Link href={item.href} className="ws-nav-link" aria-current={isActive(item, pathname) ? "page" : undefined} data-tip={item.label} data-tip-side="right">
+        <Link href={item.href} className="ws-nav-link" aria-current={isActive(item, pathname) ? "page" : undefined} aria-label={collapsedDesktop ? item.label : undefined} data-tip={item.label} data-tip-side="right" onNavigate={closeDrawer}>
           <Icon name={item.icon} size={15.5} />
           <span className="ws-nav-label">{item.label}</span>
           {count > 0 && <span className="ws-count" aria-label={`${count} new`}>{count > 99 ? "99+" : count}</span>}
@@ -205,17 +220,15 @@ function ShellFrame({ viewer, source, journey, counts, search, children }: Param
     );
   };
 
-  const collapsedDesktop = collapsed;
-
   return (
     <CrumbContext value={setCrumb}>
-      <div className="ws" data-collapsed={collapsedDesktop} data-drawer={drawer ? "open" : "closed"}>
+      <div className="ws" data-collapsed={collapsedDesktop} data-drawer={drawerOpen ? "open" : "closed"}>
         <a href="#ws-main" className="ws-skip">Skip to content</a>
         <ServiceWorker />
         {viewer.role === "learner" && <ActivitySignal />}
-        <aside className="ws-sidebar" aria-label="Workspace navigation">
+        <aside id="ws-sidebar" className="ws-sidebar" aria-label="Workspace navigation" inert={mobile && !drawerOpen}>
           <div className="ws-side-head">
-            <Link href="/workspace" className="ws-brand" aria-label="WeCodee workspace home">
+            <Link href="/workspace" className="ws-brand" aria-label="WeCodee workspace home" onNavigate={closeDrawer}>
               <Image src="/brand/sheep-mark.png" alt="" width={27} height={27} priority />
             </Link>
             <Switcher current={context.id} contexts={contexts} />
@@ -223,44 +236,41 @@ function ShellFrame({ viewer, source, journey, counts, search, children }: Param
           <button type="button" className="ws-search-trigger" onClick={() => setPalette(true)} data-tip="Search" data-tip-side="right" aria-label="Quick search">
             <Icon name="search" size={13.5} /><span>Quick search…</span><span className="ws-kbd">Ctrl K</span>
           </button>
-          <nav className="ws-nav" aria-label={context.label} ref={navRef}>
+          <nav className="ws-nav" aria-label={context.label}>
             <div className="ws-nav-inner">
-              <span className="ws-nav-indicator" aria-hidden style={box ? { transform: `translateY(${box.top}px)`, height: box.height, opacity: 1 } : undefined} />
               {context.groups.map((group, i) => {
                 if (!group.heading) {
                   return (
-                    <div key={i}>
-                      <div className="ws-nav-group"><ul>{group.items.map(renderLink)}</ul></div>
-                      {i === 0 && !collapsed && otherRecents.length > 0 && (
-                        <NavSection id="recents" heading="Recents" open={sectionOpen("recents", false)} onToggle={() => toggleSection("recents", sectionOpen("recents", false))}>
-                          <ul>
-                            {otherRecents.map((r) => (
-                              <li key={r.href}>
-                                <Link href={r.href} className="ws-nav-link ws-nav-recent" data-tip={r.label} data-tip-side="right">
-                                  <Icon name="history" size={14.5} /><span className="ws-nav-label">{r.label}</span>
-                                </Link>
-                              </li>
-                            ))}
-                          </ul>
-                        </NavSection>
-                      )}
-                    </div>
+                    <div key={i} className="ws-nav-group"><ul>{group.items.map(renderLink)}</ul></div>
                   );
                 }
                 const id = context.id + "-" + group.heading.toLowerCase();
                 const holdsActive = group.items.some((item) => isActive(item, pathname));
                 const open = sectionOpen(id, holdsActive);
                 return (
-                  <NavSection key={id} id={id} heading={group.heading} open={open} onToggle={() => toggleSection(id, open)}>
+                  <NavSection key={id} id={id} heading={group.heading} open={open} onToggle={() => toggleSection(id, open, holdsActive)}>
                     <ul>{group.items.map(renderLink)}</ul>
                   </NavSection>
                 );
               })}
+              {!collapsedDesktop && otherRecents.length > 0 && (
+                <NavSection id="recents" heading="Recents" open={sectionOpen("recents", false)} onToggle={() => toggleSection("recents", sectionOpen("recents", false))}>
+                  <ul>
+                    {otherRecents.map((r) => (
+                      <li key={r.href}>
+                        <Link href={r.href} className="ws-nav-link ws-nav-recent" onNavigate={closeDrawer}>
+                          <Icon name="history" size={14.5} /><span className="ws-nav-label">{r.label}</span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </NavSection>
+              )}
             </div>
           </nav>
           <div className="ws-side-foot">
             {accountItems.map((item) => (
-              <Link key={item.href} href={item.href} className="ws-nav-link" aria-current={isActive(item, pathname) ? "page" : undefined}>
+              <Link key={item.href} href={item.href} className="ws-nav-link" aria-current={isActive(item, pathname) ? "page" : undefined} onNavigate={closeDrawer}>
                 <Icon name={item.icon} size={15.5} /><span className="ws-nav-label">{item.label}</span>
               </Link>
             ))}
@@ -269,11 +279,11 @@ function ShellFrame({ viewer, source, journey, counts, search, children }: Param
             </button>
           </div>
         </aside>
-        {drawer && <div className="ws-scrim" onClick={() => setDrawer(false)} aria-hidden />}
+        {drawerOpen && <div className="ws-scrim" onClick={dismissDrawer} aria-hidden />}
 
         <div className="ws-main">
           <header className="ws-topbar">
-            <button type="button" className="ws-icon-btn ws-mobile-only" aria-label="Open navigation" aria-expanded={drawer} onClick={() => setDrawer(true)}>
+            <button ref={drawerButton} type="button" className="ws-icon-btn ws-mobile-only" aria-label="Open navigation" aria-controls="ws-sidebar" aria-expanded={drawerOpen} onClick={() => setDrawer(true)}>
               <Icon name="menu" size={16} />
             </button>
             <nav className="ws-crumbs" aria-label="Breadcrumb">
