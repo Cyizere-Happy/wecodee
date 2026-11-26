@@ -43,7 +43,7 @@ export default async function ReviewQueue() {
               </tbody>
             </table>
           </div>
-        ) : <div className="ws-card"><EmptyState scene="celebrate" title="Inbox zero">Every submission has been reviewed. Nice.</EmptyState></div>}
+        ) : <div className="ws-card"><EmptyState art="supervisor/review" title="No submissions waiting">New team submissions will appear here, oldest first.</EmptyState></div>}
       </section>
       <section className="ws-section">
         <div className="ws-section-head"><h2 className="ws-h2">Recently reviewed</h2></div>

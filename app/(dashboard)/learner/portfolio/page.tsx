@@ -2,7 +2,8 @@ import Link from "next/link";
 import { loadWorkspace } from "@/lib/workspace/data";
 import { learnerStats, myTeam, teamProject } from "@/lib/workspace/selectors";
 import { formatDate, nowMs } from "@/lib/workspace/rules";
-import { Badge, Card, EmptyState, Initials, Mascot, PageHeader, Stats } from "@/components/workspace/ui";
+import { Badge, Card, EmptyState, Initials, PageHeader, Stats } from "@/components/workspace/ui";
+import { MascotGuide } from "@/components/workspace/Guidance";
 import { PreferenceSwitch } from "@/components/workspace/prefs";
 
 export const metadata = { title: "Portfolio" };
@@ -34,8 +35,7 @@ export default async function Portfolio() {
       <div className="ws-grid-2">
         <div className="ws-stack">
           <section className="ws-card" style={{ overflow: "hidden" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) 180px", alignItems: "center" }}>
-              <div className="ws-card-body" style={{ padding: 24, display: "grid", gap: 10 }}>
+            <div className="ws-card-body" style={{ display: "grid", gap: 10 }}>
                 <div className="ws-row" style={{ gap: 14 }}>
                   <Initials name={p.name} large />
                   <div><h2 style={{ fontSize: "1.2375rem", fontWeight: 650, letterSpacing: "-.04em" }}>{p.name}</h2><p className="ws-muted">{p.skillLevel ?? p.experienceLevel} builder{roles.length ? " · " + roles.join(", ") : ""}</p></div>
@@ -43,8 +43,6 @@ export default async function Portfolio() {
                 <p>{p.bio || <span className="ws-faint">Add a short bio in Settings.</span>}</p>
                 <div className="ws-tags">{p.skills.map((s) => <span key={s} className="ws-tag">{s}</span>)}</div>
                 <div className="ws-tags">{Array.from({ length: stats.badges }, (_, i) => <Badge key={i} tone="red">Hot Topic badge ×10</Badge>)}</div>
-              </div>
-              <Mascot scene="idea" style={{ height: 180 }} />
             </div>
           </section>
 
@@ -78,6 +76,9 @@ export default async function Portfolio() {
         </div>
 
         <div className="ws-stack">
+          <MascotGuide art="learner/portfolio" title="Show your role in the work" compact>
+            <p>Add a short bio and skills in Settings. Your projects, team roles, and certificates appear as you earn them.</p>
+          </MascotGuide>
           <Card title="Visibility">
             <PreferenceSwitch name="portfolioPublic" value={p.portfolioPublic} disabled={minor && !p.portfolioPublic} label="Public portfolio" description={minor ? "Learners under 18 stay private unless a guardian approves." : "Anyone with the link can see it. Private by default."} />
           </Card>

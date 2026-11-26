@@ -3,10 +3,10 @@
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { startQuiz, submitQuiz, type QuizPaper } from "@/lib/workspace/actions";
 import { QUIZ_MINUTES } from "@/lib/workspace/rules";
-import { stills } from "@/lib/workspace/mascot";
 import type { Level } from "@/lib/workspace/types";
 import { Icon } from "./Icon";
 import { useToast } from "./forms";
+import { Mascot } from "./ui";
 
 type Phase = { kind: "intro" } | { kind: "taking"; paper: QuizPaper } | { kind: "done"; score: number; level: Level; message: string };
 
@@ -18,8 +18,7 @@ export function QuizRunner({ chosenLevel, retake }: { chosenLevel: Level; retake
   if (phase.kind === "done") {
     return (
       <div className="ws-card"><div className="ws-empty">
-        <span className="ws-mascot" data-soft="" style={{ width: 168, height: 168 }}>{/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={stills.medal} alt="" /></span>
+        <Mascot art="learner/quiz" />
         <h3>You scored {phase.score}. Your level is {phase.level}.</h3>
         <p>{phase.message} We’ll use your level to match you with a team.</p>
         <div className="ws-actions"><a href="/learner" className="ws-btn ws-btn-primary">Back to overview</a></div>
@@ -34,7 +33,10 @@ export function QuizRunner({ chosenLevel, retake }: { chosenLevel: Level; retake
   return (
     <div className="ws-card">
       <div className="ws-card-body" style={{ display: "grid", gap: 14, padding: 24 }}>
-        <h2 className="ws-h2">{retake ? "Retake" : "Ready when you are"}: {chosenLevel} quiz</h2>
+        <div className="ws-row-between ws-wrap">
+          <h2 className="ws-h2">{retake ? "Retake" : "Ready when you are"}: {chosenLevel} quiz</h2>
+          <Mascot art="learner/quiz" className="ws-quiz-illustration" />
+        </div>
         <ul style={{ display: "grid", gap: 8 }}>
           {[
             ["quiz", "10 to 15 multiple-choice and code-reading questions."],

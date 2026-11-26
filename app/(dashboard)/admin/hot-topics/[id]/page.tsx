@@ -6,6 +6,7 @@ import type { HotTopic } from "@/lib/workspace/types";
 import { Badge, Card, Forbidden, PageHeader } from "@/components/workspace/ui";
 import { ActionButton, ActionForm, Field, Select, Submit, TextArea } from "@/components/workspace/forms";
 import { PageCrumb } from "@/components/workspace/Shell";
+import { MascotGuide, VisualSequence } from "@/components/workspace/Guidance";
 
 const TEMPLATE = `You are my patient coding tutor. I'm a {level} learner working on: {topic}.
 Explain the idea in simple terms with one small example.
@@ -34,7 +35,7 @@ export default async function EditHotTopic({ params }: { params: Promise<{ id: s
         lead={isNew ? "New topics start as drafts. Add 3–5 check questions, then publish." : undefined}
         actions={topic && (topic.published
           ? <><Badge tone="green">Published</Badge><ActionButton run={setTopicPublished.bind(null, topic.id, false)} confirm={{ title: "Move to drafts?", body: "Learners won’t see it until you publish again. Their progress is kept.", action: "Unpublish" }}>Unpublish</ActionButton></>
-          : <><Badge>Draft</Badge><ActionButton run={setTopicPublished.bind(null, topic.id, true)} variant="primary" disabled={n < 3 || n > 5} tip={n < 3 ? "Add at least 3 check questions first" : undefined}>Publish</ActionButton></>)}
+          : <><Badge>Draft</Badge><ActionButton run={setTopicPublished.bind(null, topic.id, true)} successArt="admin/published" errorArt="admin/failed" variant="primary" disabled={n < 3 || n > 5} tip={n < 3 ? "Add at least 3 check questions first" : undefined}>Publish</ActionButton></>)}
       />
       <div className="ws-grid-2">
         <Card title="Details">
@@ -59,6 +60,20 @@ export default async function EditHotTopic({ params }: { params: Promise<{ id: s
         </Card>
 
         <div className="ws-stack">
+          {!topic?.published && (
+            <MascotGuide art="admin/library" title="Prepare this topic for learners" compact details={
+              <details className="ws-guide-example">
+                <summary>Publishing steps</summary>
+                <VisualSequence label="Publishing steps" steps={[
+                  { label: "Save a draft", icon: "file", state: topic ? "done" : "current" },
+                  { label: "Add 3–5 check questions", icon: "quiz", state: n >= 3 && n <= 5 ? "done" : topic ? "current" : "pending" },
+                  { label: "Publish", icon: "check", state: n >= 3 && n <= 5 ? "current" : "pending" },
+                ]} />
+              </details>
+            }>
+              <p>{!topic ? "Save the draft to start adding check questions." : n < 3 ? `Add ${3 - n} more check question${n === 2 ? "" : "s"} to publish.` : "Check the prompt and practice task before publishing."}</p>
+            </MascotGuide>
+          )}
           {topic ? (
             <>
               <Card title="Check questions" action={<Badge tone={n >= 3 && n <= 5 ? "green" : "amber"} plain>{n} of 3–5</Badge>} pad={false}>
@@ -90,7 +105,7 @@ export default async function EditHotTopic({ params }: { params: Promise<{ id: s
                 <dl className="ws-kv"><dt>Views</dt><dd>{topic.views}</dd><dt>Prompt copies</dt><dd>{topic.promptCopies}</dd><dt>Deep-dive requests</dt><dd>{topic.deepDiveRequests} of {data.settings.deepDiveThreshold}</dd></dl>
               </Card>
             </>
-          ) : <Card title="Check questions"><p className="ws-small ws-muted">Save the draft first, then add 3–5 questions.</p></Card>}
+          ) : null}
         </div>
       </div>
     </div>

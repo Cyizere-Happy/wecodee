@@ -8,6 +8,7 @@ import { CheckQuestions, CompleteToggle, PromptCopy, TopicVideo, TrackView } fro
 import { ActionForm, Choices, Submit, TextArea } from "@/components/workspace/forms";
 import { PageCrumb } from "@/components/workspace/Shell";
 import { Icon } from "@/components/workspace/Icon";
+import { MascotGuide, VisualSequence } from "@/components/workspace/Guidance";
 
 // Session-bound page: allowed to block on navigation (see the dashboard layout).
 export const instant = false;
@@ -32,17 +33,26 @@ export default async function HotTopic({ params }: { params: Promise<{ id: strin
         actions={<CompleteToggle topicId={id} done={Boolean(p.completedAt)} />}
       />
 
+      <div className="ws-guidance-intro">
+        <VisualSequence label="Work through this Hot Topic" steps={[
+          topic.youtubeUrl ? { label: "Watch the lesson", detail: "Start with the video.", icon: "play" } : { label: "Read the overview", detail: "The video isn’t available for this topic yet.", icon: "book" },
+          { label: "Try it yourself", detail: topic.practiceTask ? "Use the prompt to work through the practice task." : "Use the prompt to explore the topic with your tutor.", icon: "edit" },
+          { label: "Check your understanding", detail: p.attempts ? `${p.attempts} attempt${p.attempts === 1 ? "" : "s"} recorded.` : "Answer the questions and use the feedback.", icon: "quiz", state: p.attempts ? "done" : undefined },
+        ]} />
+      </div>
+
       <div className="ws-grid-2">
         <div className="ws-stack">
           <TopicVideo url={topic.youtubeUrl} title={topic.title} lowData={data.profile.lowDataMode} />
 
-          <Card title={<div><h2 className="ws-h3">Master prompt</h2><p className="ws-small ws-muted">Paste it into ChatGPT, Claude, Gemini or any assistant. It keeps the AI in tutor mode.</p></div>} action={<PromptCopy topicId={id} prompt={topic.masterPrompt} />}>
-            <pre className="ws-prompt">{topic.masterPrompt}</pre>
+          <Card title="Master prompt" action={<PromptCopy topicId={id} prompt={topic.masterPrompt} />}>
+            <MascotGuide art="learner/prompt" title="Ask your AI tutor to coach you" compact>
+              <p>Copy the prompt into your assistant. Share your first attempt and ask for a hint on the part you’re working through.</p>
+            </MascotGuide>
+            <details className="ws-guide-example"><summary>Read the full prompt</summary><pre className="ws-prompt">{topic.masterPrompt}</pre></details>
           </Card>
 
-          <Card title="Practice task">
-            <p>{topic.practiceTask}.</p>
-          </Card>
+          {topic.practiceTask && <MascotGuide art="learner/practice" title="Practice task" compact><p>{topic.practiceTask}</p></MascotGuide>}
 
           <Card title={<div><h2 className="ws-h3">Check questions</h2><p className="ws-small ws-muted">{topic.questions.length} questions on the main ideas. Retries are welcome.</p></div>}>
             <CheckQuestions topicId={id} questions={topic.questions.map(({ id, question, options }) => ({ id, question, options, correct: -1, explanation: "" }))} best={p.bestScore} first={p.firstScore} attempts={p.attempts} />
@@ -53,7 +63,7 @@ export default async function HotTopic({ params }: { params: Promise<{ id: strin
           <Card title="Your progress">
             <ul style={{ display: "grid", gap: 10 }}>
               {[
-                ["Watched", p.viewedAt], ["Prompt copied", p.promptCopiedAt], ["Marked as done", p.completedAt],
+                ["Opened", p.viewedAt], ["Prompt copied", p.promptCopiedAt], ["Marked as done", p.completedAt],
               ].map(([label, at]) => (
                 <li key={label} className="ws-row-between">
                   <span className="ws-row" style={{ gap: 8 }}><Icon name={at ? "check" : "clock"} size={13.5} className={at ? "" : "ws-faint"} />{label}</span>

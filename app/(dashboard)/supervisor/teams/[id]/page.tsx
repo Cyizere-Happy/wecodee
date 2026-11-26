@@ -3,10 +3,11 @@ import { notFound } from "next/navigation";
 import { loadWorkspace } from "@/lib/workspace/data";
 import { isOverdue, memberViews, personById, reportGrid, supervisesTeam, teamProject, workingDays } from "@/lib/workspace/selectors";
 import { formatDate } from "@/lib/workspace/rules";
-import { Badge, Card, Forbidden, MilestoneBadge, PageHeader, ReadinessBadge } from "@/components/workspace/ui";
+import { Badge, Card, Forbidden, Meter, MilestoneBadge, PageHeader, ReadinessBadge } from "@/components/workspace/ui";
 import { ReportGrid } from "@/components/workspace/ReportGrid";
 import { MilestonePath } from "@/components/workspace/MilestonePath";
 import { PageCrumb } from "@/components/workspace/Shell";
+import { MascotGuide } from "@/components/workspace/Guidance";
 
 // Session-bound page: allowed to block on navigation (see the dashboard layout).
 export const instant = false;
@@ -22,6 +23,7 @@ export default async function SupervisedTeam({ params }: { params: Promise<{ id:
   const members = memberViews(data, team, viewer);
   const days = workingDays(14);
   const grid = reportGrid(team, data.reports, days);
+  const approved = project?.milestones.filter((milestone) => milestone.status === "approved").length ?? 0;
 
   return (
     <div className="ws-content">
@@ -33,7 +35,16 @@ export default async function SupervisedTeam({ params }: { params: Promise<{ id:
         actions={<>{team.status === "active" ? <Badge tone="green">Active</Badge> : <Badge tone="amber">Pending group</Badge>}{team.whatsappLink && <a className="ws-btn ws-btn-secondary ws-btn-sm" href={team.whatsappLink} target="_blank" rel="noreferrer">WhatsApp group</a>}</>}
       />
       <div className="ws-stack">
-        {project && <Card title="Milestones"><MilestonePath milestones={project.milestones} base={`/supervisor/reviews/${project.id}/`} /></Card>}
+        {project ? (
+          <Card title="Milestones" action={<Badge plain>{approved} of {project.milestones.length} approved</Badge>}>
+            <Meter value={approved} max={project.milestones.length} label="Approved milestones" />
+            <MilestonePath milestones={project.milestones} base={`/supervisor/reviews/${project.id}/`} />
+          </Card>
+        ) : (
+          <MascotGuide art="supervisor/teams" title={team.status === "active" ? "Waiting for the first project" : "Waiting for group approval"} compact>
+            <p>{team.status === "active" ? "When the leader creates a project, its milestones and review history appear here." : "The team can start a project once its WhatsApp group is approved."}</p>
+          </MascotGuide>
+        )}
         <div className="ws-table-wrap">
           <table className="ws-table">
             <thead><tr><th>Member</th><th>Roles</th><th>Readiness</th><th>WhatsApp</th></tr></thead>

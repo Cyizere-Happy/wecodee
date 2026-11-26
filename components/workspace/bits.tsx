@@ -10,7 +10,7 @@ export const PALETTE_EVENT = "wecodee:palette";
 
 export function SearchLauncher({ placeholder = "Search Hot Topics, articles and pages" }: { placeholder?: string }) {
   return (
-    <button type="button" className="ws-hero-search" onClick={() => window.dispatchEvent(new Event(PALETTE_EVENT))}>
+    <button type="button" className="ws-overview-search" onClick={() => window.dispatchEvent(new Event(PALETTE_EVENT))}>
       <Icon name="search" size={15.5} /><span>{placeholder}</span><span className="ws-kbd">Ctrl K</span>
     </button>
   );

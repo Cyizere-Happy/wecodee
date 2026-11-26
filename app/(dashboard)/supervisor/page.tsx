@@ -6,6 +6,7 @@ import { confirmInactive, resolveBlocker, reviewGroup } from "@/lib/workspace/ac
 import { Badge, Card, EmptyState, Forbidden, PageHeader, QuietLink, Stats } from "@/components/workspace/ui";
 import { ActionButton, ActionForm, Choices, DialogButton, Submit, TextArea } from "@/components/workspace/forms";
 import { Icon } from "@/components/workspace/Icon";
+import { MascotGuide } from "@/components/workspace/Guidance";
 
 export const metadata = { title: "Supervisor" };
 
@@ -25,10 +26,22 @@ export default async function SuperviseOverview() {
   const overdue = teams.flatMap((t) => (teamProject(data, t.id)?.milestones ?? []).filter((m) => isOverdue(m)).map((m) => ({ team: t, milestone: m })));
   const blockers = openBlockers(data, teams.map((t) => t.id));
   const flags = teams.flatMap((t) => t.members.filter((m) => m.flaggedInactive).map((m) => ({ team: t, member: m })));
+  const [nextReview] = queue;
 
   return (
     <div className="ws-content">
       <PageHeader eyebrow="Supervisor" title={`Good to see you, ${viewer.name.split(" ")[0]}.`} lead="Everything waiting on you across the teams you supervise, oldest first." />
+      <div className="ws-guidance-intro">
+        {nextReview ? (
+          <MascotGuide art="supervisor/review" title="Start with the oldest submission" compact action={<QuietLink href={`/supervisor/reviews/${nextReview.project.id}/${nextReview.milestone.order}`}>Review {nextReview.team.name}’s submission</QuietLink>}>
+            <p>{nextReview.milestone.name} · Submitted {relativeDays(nextReview.at)}. Open the deliverable and compare it with the milestone checklist.</p>
+          </MascotGuide>
+        ) : (
+          <MascotGuide art="supervisor/teams" title={groups.length ? "Group links are ready to check" : "No submissions waiting for review"} compact action={groups.length ? <QuietLink href="#group-approvals">View group links</QuietLink> : <QuietLink href="/supervisor/teams">View teams</QuietLink>}>
+            <p>{groups.length ? "Join each group and check its members before approving it." : "Check your teams for open blockers or upcoming milestone due dates."}</p>
+          </MascotGuide>
+        )}
+      </div>
       <Stats items={[
         { label: "Assigned teams", value: teams.length, icon: "users" },
         { label: "Awaiting review", value: queue.length, icon: "inbox" },
@@ -49,10 +62,10 @@ export default async function SuperviseOverview() {
                   </li>
                 ))}
               </ul>
-            ) : <EmptyState compact still="medal" title="Review queue is clear">New submissions will appear here, oldest first.</EmptyState>}
+            ) : <p className="ws-card-body ws-small ws-muted">New submissions will appear here, oldest first.</p>}
           </Card>
 
-          <Card title="WhatsApp groups awaiting approval" pad={false}>
+          <div id="group-approvals" className="ws-guide-anchor"><Card title="WhatsApp groups awaiting approval" pad={false}>
             {groups.length ? (
               <ul className="ws-list">
                 {groups.map((t) => (
@@ -72,7 +85,7 @@ export default async function SuperviseOverview() {
                 ))}
               </ul>
             ) : <p className="ws-card-body ws-small ws-muted">No groups waiting.</p>}
-          </Card>
+          </Card></div>
 
           <Card title="Overdue milestones" pad={false}>
             {overdue.length ? (

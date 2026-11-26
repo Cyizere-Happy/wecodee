@@ -6,12 +6,12 @@ import {
 } from "react";
 import { useFormStatus } from "react-dom";
 import type { ActionResult } from "@/lib/workspace/types";
-import { stills } from "@/lib/workspace/mascot";
+import { mascotArtSrc, stills, type ArtName } from "@/lib/workspace/mascot";
 import { Icon } from "./Icon";
 
 /* ---------- Toasts ---------- */
 
-type Toast = { id: number; tone: "success" | "error"; message: string };
+type Toast = { id: number; tone: "success" | "error"; message: string; art?: ArtName };
 const ToastContext = createContext<(t: Omit<Toast, "id">) => void>(() => {});
 export const useToast = () => useContext(ToastContext);
 
@@ -30,7 +30,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         {toasts.map((t) => (
           <div key={t.id} className="ws-toast" data-tone={t.tone}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={t.tone === "success" ? stills.medal : stills.repair} alt="" />
+            <img src={t.art ? mascotArtSrc(t.art) : t.tone === "success" ? stills.medal : stills.repair} alt="" />
             <p>{t.message}</p>
             <button type="button" className="ws-icon-btn" aria-label="Dismiss" onClick={() => setToasts((l) => l.filter((x) => x.id !== t.id))}><Icon name="x" size={12.5} /></button>
           </div>
@@ -47,13 +47,15 @@ const FieldErrors = createContext<Record<string, string>>({});
 /** Set by DialogButton so a form inside it closes the dialog after a successful submit. */
 const CloseDialog = createContext<(() => void) | null>(null);
 
-export function ActionForm({ action, children, className = "ws-form", onSuccess, reset = false, id }: {
+export function ActionForm({ action, children, className = "ws-form", onSuccess, reset = false, id, successArt, errorArt }: {
   action: ServerAction;
   children: ReactNode;
   className?: string;
   onSuccess?: (result: ActionResult) => void;
   reset?: boolean;
   id?: string;
+  successArt?: ArtName;
+  errorArt?: ArtName;
 }) {
   const [state, run] = useActionState(action, null);
   const toast = useToast();
@@ -65,7 +67,7 @@ export function ActionForm({ action, children, className = "ws-form", onSuccess,
     if (!state || seen.current === state) return;
     seen.current = state;
     if (state.ok) {
-      toast({ tone: "success", message: state.message });
+      toast({ tone: "success", message: state.message, art: successArt });
       // Completion feedback: a short pulse on the submit button (CSS [data-done], skipped with reduced motion).
       const button = form.current?.querySelector<HTMLElement>('button[type="submit"], button:not([type])');
       if (button) { button.dataset.done = "true"; window.setTimeout(() => { delete button.dataset.done; }, 600); }
@@ -77,14 +79,20 @@ export function ActionForm({ action, children, className = "ws-form", onSuccess,
       const el = form.current?.querySelector<HTMLElement>(`[name="${first}"]`);
       el?.focus();
     }
-  }, [state, toast, reset, onSuccess, closeDialog]);
+  }, [state, toast, reset, onSuccess, closeDialog, successArt]);
 
   return (
     <FieldErrors value={state && !state.ok ? state.fields ?? {} : {}}>
       <form ref={form} action={run} className={className} noValidate id={id}>
         {children}
         {state && !state.ok && (
-          <p className="ws-feedback" data-tone="error" role="alert"><Icon name="alert" size={12.5} /><span>{state.message}</span></p>
+          <p className="ws-feedback" data-tone="error" role="alert">
+            {errorArt ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img className="ws-feedback-art" src={mascotArtSrc(errorArt)} alt="" width={36} height={36} />
+            ) : <Icon name="alert" size={12.5} />}
+            <span>{state.message}</span>
+          </p>
         )}
       </form>
     </FieldErrors>
@@ -244,7 +252,7 @@ export function DialogButton({ label, title, description, children, variant = "s
  * Runs a server action from a button, with an optional confirmation step
  * for destructive or hard-to-undo changes.
  */
-export function ActionButton({ run, children, variant = "secondary", size = "sm", confirm, icon, disabled, tip }: {
+export function ActionButton({ run, children, variant = "secondary", size = "sm", confirm, icon, disabled, tip, successArt, errorArt }: {
   run: () => Promise<ActionResult>;
   children: ReactNode;
   variant?: "primary" | "secondary" | "ghost" | "danger" | "danger-quiet";
@@ -252,6 +260,8 @@ export function ActionButton({ run, children, variant = "secondary", size = "sm"
   icon?: Parameters<typeof Icon>[0]["name"];
   disabled?: boolean;
   tip?: string;
+  successArt?: ArtName;
+  errorArt?: ArtName;
   confirm?: { title: string; body: ReactNode; action: string; danger?: boolean };
 }) {
   const [pending, start] = useTransition();
@@ -260,7 +270,7 @@ export function ActionButton({ run, children, variant = "secondary", size = "sm"
   const execute = () => start(async () => {
     const result = await run();
     setOpen(false);
-    toast({ tone: result.ok ? "success" : "error", message: result.message });
+    toast({ tone: result.ok ? "success" : "error", message: result.message, art: result.ok ? successArt : errorArt });
   });
   return (
     <>

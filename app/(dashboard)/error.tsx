@@ -10,14 +10,15 @@ export default function WorkspaceError({ reset, retry }: { reset: () => void; re
     <div className="ws-content ws-content-narrow">
       <div className="ws-card">
         <EmptyState
-          still={offline ? "cable" : "repair"}
-          title={offline ? "Lost our connection." : "Even builders break things."}
+          still={offline ? "cable" : undefined}
+          art={offline ? undefined : "admin/maintenance"}
+          title={offline ? "You’re offline" : "We couldn’t load this page"}
           actions={<>
             <button type="button" className="ws-btn ws-btn-primary" onClick={retry ?? reset}>Try again</button>
             <Link href="/workspace" className="ws-btn ws-btn-secondary">Back to overview</Link>
           </>}
         >
-          {offline ? "Reconnect to the internet to continue your journey." : "Something went wrong on our side while loading this page. Your work is safe."}
+          {offline ? "Reconnect to the internet and try again." : "Try loading the page again or return to your overview."}
         </EmptyState>
       </div>
     </div>

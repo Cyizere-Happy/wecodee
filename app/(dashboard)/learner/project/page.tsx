@@ -3,10 +3,11 @@ import { loadWorkspace } from "@/lib/workspace/data";
 import { isLeader, isOverdue, myTeam, teamProject } from "@/lib/workspace/selectors";
 import { formatDate, relativeDays } from "@/lib/workspace/rules";
 import { createProject } from "@/lib/workspace/actions";
-import { Card, EmptyState, MilestoneBadge, PageHeader } from "@/components/workspace/ui";
+import { Card, EmptyState, Mascot, MilestoneBadge, PageHeader } from "@/components/workspace/ui";
 import { ActionForm, Field, Submit, TextArea } from "@/components/workspace/forms";
 import { MilestonePath } from "@/components/workspace/MilestonePath";
-import { MascotClip } from "@/components/workspace/bits";
+import { MascotGuide } from "@/components/workspace/Guidance";
+import { milestoneGuide } from "@/lib/workspace/milestone-guide";
 
 export const metadata = { title: "Project" };
 
@@ -35,7 +36,7 @@ export default async function ProjectPage() {
                 <div><Submit arrow>Create project</Submit></div>
               </ActionForm>
             </Card>
-            <Card pad={false}><MascotClip clip="path" lowData={data.profile.lowDataMode} style={{ aspectRatio: "16/10", width: "100%" }} /><p className="ws-card-body ws-small ws-muted">Your supervisor approves the project as milestone 1, then each milestone opens in turn.</p></Card>
+            <div><MascotGuide art="milestones/problem" title="Start with evidence" compact><p>Describe who has the problem and how you found out. Once the first milestone is approved, the project proposal opens.</p></MascotGuide></div>
           </div>
         ) : (
           <div className="ws-card">
@@ -69,15 +70,21 @@ export default async function ProjectPage() {
             <table className="ws-table">
               <thead><tr><th>#</th><th>Milestone</th><th>Due</th><th>Status</th><th className="num">Versions</th></tr></thead>
               <tbody>
-                {project.milestones.map((m) => (
-                  <tr key={m.order}>
-                    <td className="ws-muted">{m.order}</td>
-                    <td><Link href={"/learner/project/" + m.order} className="ws-link" style={{ textDecoration: "none", fontWeight: 600 }}>{m.name}</Link><div className="ws-small ws-muted">{m.deliverable}</div></td>
-                    <td className="ws-small" style={{ whiteSpace: "nowrap" }}>{m.dueDate ? <>{formatDate(m.dueDate)}<div className="ws-faint">{m.status === "approved" ? "" : relativeDays(m.dueDate)}</div></> : <span className="ws-faint">Not set</span>}</td>
-                    <td><MilestoneBadge status={m.status} overdue={isOverdue(m)} /></td>
-                    <td className="num">{m.submissions.length || "–"}</td>
-                  </tr>
-                ))}
+                {project.milestones.map((m) => {
+                  const guide = milestoneGuide(m.order, m.name);
+                  return (
+                    <tr key={m.order}>
+                      <td className="ws-muted">{m.order}</td>
+                      <td><div className="ws-row">
+                        {guide && <Mascot art={guide.art} className="ws-milestone-thumb" />}
+                        <div><Link href={"/learner/project/" + m.order} className="ws-link" style={{ textDecoration: "none", fontWeight: 600 }}>{m.name}</Link><div className="ws-small ws-muted">{m.deliverable}</div></div>
+                      </div></td>
+                      <td className="ws-small" style={{ whiteSpace: "nowrap" }}>{m.dueDate ? <>{formatDate(m.dueDate)}<div className="ws-faint">{m.status === "approved" ? "" : relativeDays(m.dueDate)}</div></> : <span className="ws-faint">Not set</span>}</td>
+                      <td><MilestoneBadge status={m.status} overdue={isOverdue(m)} /></td>
+                      <td className="num">{m.submissions.length || "–"}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

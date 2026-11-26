@@ -39,7 +39,7 @@ export default async function SupervisedTeams() {
             </tbody>
           </table>
         </div>
-      ) : <div className="ws-card"><EmptyState still="hourglass" title="No teams assigned yet">Teams are assigned to the supervisor with the fewest active teams when they’re formed.</EmptyState></div>}
+      ) : <div className="ws-card"><EmptyState art="supervisor/teams" title="No teams assigned yet">Teams are assigned to the supervisor with the fewest active teams when they’re formed.</EmptyState></div>}
     </div>
   );
 }

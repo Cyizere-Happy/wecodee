@@ -3,6 +3,7 @@ import { personById, teamProject } from "@/lib/workspace/selectors";
 import { formatDate, kigaliDay, nowMs } from "@/lib/workspace/rules";
 import { Badge, Card, Feedback, Forbidden, Meter, PageHeader, QuietLink, Stats } from "@/components/workspace/ui";
 import { CsvButton } from "@/components/workspace/bits";
+import { MascotGuide } from "@/components/workspace/Guidance";
 
 export const metadata = { title: "Reports" };
 
@@ -101,6 +102,12 @@ export default async function AdminReports() {
             <dt>Projects</dt><dd>{projects.length} ({projects.filter((p) => p.status === "complete").length} complete)</dd>
           </dl>
         </Card>
+      </div>
+
+      <div className="ws-section">
+        <MascotGuide art="admin/analytics" title="How to read these reports" compact>
+          <p>Placement is measured against registered learners. Review turnaround measures completed reviews, from submission to decision. Pending reviews are counted separately.</p>
+        </MascotGuide>
       </div>
 
       <div className="ws-grid-even ws-section">

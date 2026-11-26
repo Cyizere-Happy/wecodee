@@ -1,15 +1,17 @@
 import Link from "next/link";
-import Image from "next/image";
 import { loadWorkspace } from "@/lib/workspace/data";
 import {
   currentMilestone, isLeader, isOverdue, learnerStats, myTeam, personById, profileComplete, reportStreak,
   teamProject, upcomingEvents,
 } from "@/lib/workspace/selectors";
 import { formatDate, formatDateTime, kigaliDay, relativeDays } from "@/lib/workspace/rules";
-import { Badge, Card, EmptyState, Mascot, MilestoneBadge, QuietLink, Stats } from "@/components/workspace/ui";
-import { MascotClip, SearchLauncher } from "@/components/workspace/bits";
+import { Badge, Card, EmptyState, MilestoneBadge, PageHeader, QuietLink, Stats } from "@/components/workspace/ui";
+import { SearchLauncher } from "@/components/workspace/bits";
 import { Icon } from "@/components/workspace/Icon";
 import { MilestonePath } from "@/components/workspace/MilestonePath";
+import { MascotGuide, VisualSequence } from "@/components/workspace/Guidance";
+import { milestoneGuide } from "@/lib/workspace/milestone-guide";
+import type { ArtName } from "@/lib/workspace/mascot";
 
 export const metadata = { title: "Overview" };
 
@@ -33,85 +35,66 @@ export default async function Overview() {
 
   const profileDone = profileComplete(data);
   const quizDone = data.profile.quiz.status === "completed";
-  const onboarding = !team;
   const steps = [
-    { label: "Verify your email", detail: "Done when you signed up.", done: true, href: null },
-    { label: "Complete your builder profile", detail: "Contact, skills and a few readiness questions.", done: profileDone, href: "/settings" },
-    { label: "Take the skills quiz", detail: "20 minutes. It sets your level for team matching.", done: quizDone, href: profileDone ? "/learner/quiz" : null },
-    { label: "Get placed in a team of five", detail: data.profile.optedIn ? "Teams form every week from the placement pool." : "You opted out of a project team.", done: Boolean(team), href: quizDone ? "/learner/team" : null },
-  ];
-  const doneCount = steps.filter((s) => s.done).length;
+    { label: "Verify your email", detail: "Done when you signed up.", icon: "check", done: true },
+    { label: "Builder profile", detail: "Add your contact details and skills.", icon: "user", done: profileDone },
+    { label: "Skills quiz", detail: "Set your readiness level for team matching.", icon: "quiz", done: quizDone },
+    { label: "Team placement", detail: data.profile.optedIn ? "Teams form from the placement pool." : "You opted out of team placement.", icon: "users", done: Boolean(team) },
+  ] as const;
+  const nextStep = steps.findIndex((step) => !step.done);
+  type NextAction = { art: ArtName; title: string; detail: string; href: string; label: string };
+  let next: NextAction;
+  if (!profileDone) {
+    next = { art: "learner/welcome", title: "Set up your builder profile", detail: "Your contact details and skills help WeCodee prepare you for the readiness quiz and team placement.", href: "/settings", label: "Complete profile" };
+  } else if (!quizDone) {
+    next = { art: "learner/quiz", title: "Find your starting point", detail: "The skills quiz takes 20 minutes. WeCodee uses your result to match teammates by readiness.", href: "/learner/quiz", label: "Open skills quiz" };
+  } else if (!team) {
+    next = data.profile.optedIn
+      ? { art: "learner/team", title: "You’re in the placement pool", detail: "You can keep learning while your team is being formed.", href: "/learner/team", label: "See placement status" }
+      : { art: "learner/team", title: "Team placement is off", detail: "You can keep learning and change your placement preference in Settings.", href: "/settings", label: "Open settings" };
+  } else if (project?.status === "complete") {
+    next = { art: "states/project-complete", title: "Your project is complete", detail: "Check your certificate eligibility based on your confirmed milestone contributions.", href: "/learner/certificates", label: "View certificates" };
+  } else if (!project || !milestone) {
+    next = team.status === "active" && isLeader(team, viewer)
+      ? { art: "learner/team", title: "Create your team project", detail: "Start with the problem your team wants to solve. Your project is where you’ll submit each deliverable.", href: "/learner/project", label: "Open project" }
+      : { art: "learner/team", title: "Get ready to build together", detail: team.status === "active" ? "Your team leader can now create your project." : "Your project can start once the WhatsApp group is approved.", href: "/learner/team", label: "Open team page" };
+  } else {
+    const href = "/learner/project/" + milestone.order;
+    if (milestone.status === "submitted") {
+      next = { art: "states/waiting", title: "Your milestone is with your supervisor", detail: "You can read the decision and feedback on the milestone once the review is recorded.", href, label: "View submission" };
+    } else if (milestone.status === "changes_requested") {
+      next = { art: "states/feedback", title: "Your supervisor left feedback", detail: "Read the requested changes and agree on who will handle each revision before your team resubmits.", href, label: "Read feedback" };
+    } else {
+      next = { art: milestoneGuide(milestone.order, milestone.name)?.art ?? "states/submission", title: milestone.name, detail: milestone.deliverable + (milestone.dueDate ? " · Due " + formatDate(milestone.dueDate) : ""), href, label: "Open current milestone" };
+    }
+  }
 
   return (
     <div className="ws-content">
-      <section className="ws-hero" aria-labelledby="ws-hero-title">
-        {nextEvent ? (
-          <Link href="/learner/events" className="ws-pill">
-            <Image src="/brand/sheep-mark.png" alt="" width={20} height={20} />
-            {nextEvent.title} · {relativeDays(nextEvent.startsAt)}
-            <Icon name="chevronRight" size={12.5} />
+      <PageHeader
+        title={<>Good to see you, {first}<span style={{ color: "var(--ws-red)" }}>.</span></>}
+        lead={team ? "Check in on your team, project, and learning." : "Here’s where to pick up your WeCodee journey."}
+        actions={<SearchLauncher />}
+      />
+
+      <div className="ws-guidance-intro">
+        <MascotGuide art={next.art} title={next.title} action={<Link href={next.href} className="ws-btn ws-btn-primary">{next.label}<Icon name="arrowRight" size={14} /></Link>}>
+          <p>{next.detail}</p>
+        </MascotGuide>
+        {!team && <VisualSequence label="Getting started" steps={steps.map((step, index) => ({
+          ...step,
+          state: step.done ? "done" : index === nextStep && (index !== 3 || data.profile.optedIn) ? "current" : "pending",
+        }))} />}
+        <nav aria-label="Learner shortcuts" className="ws-guidance-links">
+          <Link href={nextTopic ? "/learner/hot-topics/" + nextTopic.id : "/learner/hot-topics"} className="ws-btn ws-btn-secondary ws-btn-sm">
+            <Icon name="play" size={14} />{nextTopic ? (inProgress.includes(nextTopic) ? "Resume " : "Open ") + nextTopic.title : "Browse Hot Topics"}
           </Link>
-        ) : (
-          <span className="ws-pill"><Image src="/brand/sheep-mark.png" alt="" width={20} height={20} />Welcome to WeCodee</span>
-        )}
-        <h1 id="ws-hero-title" className="ws-hero-title">
-          <span>{onboarding ? <>Let’s get you building, {first}<span style={{ color: "var(--ws-red)" }}>.</span></> : <>What are we building today<span style={{ color: "var(--ws-red)" }}>?</span></>}</span>
-        </h1>
-        <SearchLauncher />
-      </section>
-
-      {onboarding && (
-        <section className="ws-card" style={{ marginBottom: 24, overflow: "hidden" }} aria-labelledby="ws-onboarding">
-          <div className="ws-grid-even" style={{ alignItems: "center", gap: 0 }}>
-            <div style={{ padding: "20px 21.5px" }}>
-              <span className="ws-eyebrow">Getting started · {doneCount} of {steps.length}</span>
-              <h2 id="ws-onboarding" className="ws-h2" style={{ fontSize: "1.125rem", letterSpacing: "-.035em" }}>Your desk is ready. Four small steps to your first team.</h2>
-              <ol className="ws-steps" style={{ marginTop: 14, marginInline: -20 }}>
-                {steps.map((s, i) => {
-                  const current = !s.done && steps.slice(0, i).every((x) => x.done);
-                  return (
-                    <li key={s.label} className="ws-step" data-state={s.done ? "done" : current ? "current" : "locked"}>
-                      <span className="ws-step-dot">{s.done ? <Icon name="check" size={11.5} /> : i + 1}</span>
-                      <div style={{ minWidth: 0 }}>
-                        <p style={{ fontWeight: 600 }}>{s.label}</p>
-                        <p className="ws-small ws-muted">{s.detail}</p>
-                      </div>
-                      {current && s.href && <Link href={s.href} className="ws-btn ws-btn-primary ws-btn-sm">Start<span className="ws-arrow" aria-hidden>→</span></Link>}
-                    </li>
-                  );
-                })}
-              </ol>
-            </div>
-            <MascotClip clip="preparing" lowData={data.profile.lowDataMode} style={{ aspectRatio: "16 / 10", width: "100%" }} />
-          </div>
-        </section>
-      )}
-
-      <div className="ws-launch" style={{ marginBottom: 24 }}>
-        <article className="ws-card ws-launch-card ws-card-link">
-          <div className="ws-launch-art"><Mascot scene="celebrate" /></div>
-          <div className="ws-launch-body">
-            <h3>{nextTopic && inProgress.includes(nextTopic) ? "Pick up where you left off" : "Learn something in 10 minutes"}</h3>
-            <p>{nextTopic ? nextTopic.title + ". " + nextTopic.summary : "Short videos with a master prompt for your AI tutor."}</p>
-            <Link href={nextTopic ? "/learner/hot-topics/" + nextTopic.id : "/learner/hot-topics"} className="ws-btn ws-btn-secondary ws-btn-sm">{nextTopic ? "Watch now" : "Browse Hot Topics"}</Link>
-          </div>
-        </article>
-        <article className="ws-card ws-launch-card ws-card-link">
-          <div className="ws-launch-art"><Mascot scene={team ? "desk" : "welcome"} /></div>
-          <div className="ws-launch-body">
-            <h3>{team ? (reportedToday ? "Today’s report is in" : "Post today’s report") : "Meet your future team"}</h3>
-            <p>{team ? (reportedToday ? "Nice. You can still edit it until midnight." : "Done, next, blockers, hours. Under a minute, even offline.") : "Teams of five are matched by skills, time and connection, so nobody gets left behind."}</p>
-            <Link href={team ? "/learner/reports" : "/learner/team"} className="ws-btn ws-btn-secondary ws-btn-sm">{team ? (reportedToday ? "Edit report" : "Write report") : "How teams work"}</Link>
-          </div>
-        </article>
-        <article className="ws-card ws-launch-card ws-card-link">
-          <div className="ws-launch-art"><Mascot scene="path" /></div>
-          <div className="ws-launch-body">
-            <h3>{milestone ? `Milestone ${milestone.order}: ${milestone.name}` : "Ship a real project"}</h3>
-            <p>{milestone ? (milestone.dueDate ? `Due ${formatDate(milestone.dueDate)} (${relativeDays(milestone.dueDate)}). ` : "") + milestone.deliverable + "." : "Eight supervised milestones, from problem to deployment and a free certificate."}</p>
-            <Link href={milestone ? "/learner/project/" + milestone.order : "/learner/project"} className="ws-btn ws-btn-secondary ws-btn-sm">{milestone ? "Open milestone" : "See the journey"}</Link>
-          </div>
-        </article>
+          <Link href={team ? "/learner/reports" : "/learner/team"} className="ws-btn ws-btn-secondary ws-btn-sm">
+            <Icon name={team ? "clipboard" : "users"} size={14} />{team ? reportedToday ? "Edit today’s report" : "Write today’s report" : "How teams work"}
+          </Link>
+          <Link href="/learner/project" className="ws-btn ws-btn-secondary ws-btn-sm"><Icon name="flag" size={14} />Project milestones</Link>
+          {nextEvent && <Link href="/learner/events" className="ws-btn ws-btn-secondary ws-btn-sm"><Icon name="calendar" size={14} />{nextEvent.title} · {relativeDays(nextEvent.startsAt)}</Link>}
+        </nav>
       </div>
 
       <Stats items={[
@@ -124,14 +107,14 @@ export default async function Overview() {
       <div className="ws-grid-2" style={{ marginTop: 24 }}>
         <div className="ws-stack">
           <Card title="Project" action={project && <QuietLink href="/learner/project">All milestones</QuietLink>} pad={!project}>
-            {project && milestone ? (
+            {project ? (
               <div className="ws-card-body" style={{ display: "grid", gap: 18 }}>
                 <div className="ws-row-between ws-wrap">
                   <div>
                     <p style={{ fontWeight: 650, fontSize: ".9rem", letterSpacing: "-.02em" }}>{project.title}</p>
                     <p className="ws-small ws-muted">{project.solution}</p>
                   </div>
-                  <MilestoneBadge status={milestone.status} overdue={isOverdue(milestone)} />
+                  {milestone ? <MilestoneBadge status={milestone.status} overdue={isOverdue(milestone)} /> : <Badge tone="green">Complete</Badge>}
                 </div>
                 <MilestonePath milestones={project.milestones} />
               </div>
@@ -174,8 +157,8 @@ export default async function Overview() {
                 </dl>
               </div>
             ) : (
-              <EmptyState compact still="door" title={quizDone ? "You’re in the placement pool" : "No team yet"}>
-                {quizDone ? "We form teams every week. You’ll get an email the moment yours is ready." : "Take the skills quiz to join the placement pool."}
+              <EmptyState compact still="door" title={quizDone && data.profile.optedIn ? "You’re in the placement pool" : "No team yet"}>
+                {quizDone ? data.profile.optedIn ? "We form teams every week. You’ll get an email when yours is ready." : "You can opt into team placement in Settings." : "Take the skills quiz to join the placement pool."}
               </EmptyState>
             )}
           </Card>

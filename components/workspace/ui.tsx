@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { scenes, stills, type SceneName, type StillName } from "@/lib/workspace/mascot";
+import { mascotArtSrc, scenes, stills, type ArtName, type SceneName, type StillName } from "@/lib/workspace/mascot";
 import type { MilestoneStatus, Readiness } from "@/lib/workspace/types";
 import { milestoneStatusLabel } from "@/lib/workspace/rules";
 import { Icon, type IconName } from "./Icon";
@@ -35,23 +35,22 @@ export function ReadinessBadge({ level }: { level: Readiness }) {
   return <Badge tone={readinessTone[level]}>{level} readiness</Badge>;
 }
 
-/** The sheep, from existing artwork only. `still` = white-background figure, `scene` = wide poster. */
-export function Mascot({ still, scene, alt, className = "", style }: { still?: StillName; scene?: SceneName; alt?: string; className?: string; style?: React.CSSProperties }) {
-  const src = still ? stills[still] : scenes[scene ?? "cards"];
+export function Mascot({ art, still, scene, alt, className = "", style }: { art?: ArtName; still?: StillName; scene?: SceneName; alt?: string; className?: string; style?: React.CSSProperties }) {
+  const src = art ? mascotArtSrc(art) : still ? stills[still] : scenes[scene ?? "cards"];
   return (
     <span className={"ws-mascot " + className} data-soft={still ? "" : undefined} data-scene={scene ? "" : undefined} role={alt ? "img" : undefined} aria-label={alt} style={style}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={src} alt="" decoding="async" loading="lazy" />
+      <img src={src} alt="" width={art ? 512 : undefined} height={art ? 512 : undefined} decoding="async" loading="lazy" />
     </span>
   );
 }
 
-export function EmptyState({ still, scene, title, children, actions, compact }: {
-  still?: StillName; scene?: SceneName; title: string; children?: ReactNode; actions?: ReactNode; compact?: boolean;
+export function EmptyState({ art, still, scene, title, children, actions, compact }: {
+  art?: ArtName; still?: StillName; scene?: SceneName; title: string; children?: ReactNode; actions?: ReactNode; compact?: boolean;
 }) {
   return (
     <div className={"ws-empty" + (compact ? " ws-empty-compact" : "")}>
-      <Mascot still={still} scene={scene} />
+      <Mascot art={art} still={still} scene={scene} />
       <h3>{title}</h3>
       {children && <p>{children}</p>}
       {actions && <div className="ws-actions">{actions}</div>}

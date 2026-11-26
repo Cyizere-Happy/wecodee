@@ -1,7 +1,7 @@
 import { loadWorkspace } from "@/lib/workspace/data";
 import { formatDate } from "@/lib/workspace/rules";
 import { createUser, updateUser } from "@/lib/workspace/actions";
-import { Badge, Forbidden, PageHeader, ReadinessBadge } from "@/components/workspace/ui";
+import { Badge, Forbidden, Mascot, PageHeader, ReadinessBadge } from "@/components/workspace/ui";
 import { ActionButton, ActionForm, DialogButton, Field, Select, Submit } from "@/components/workspace/forms";
 import { CsvButton, FilterInput } from "@/components/workspace/bits";
 import { RoleSelect } from "@/components/workspace/admin";
@@ -23,7 +23,8 @@ export default async function AdminUsers() {
       <PageHeader eyebrow="Admin" title="Users" lead={`${people.length} accounts. Role and status changes are written to the audit log.`} actions={<>
         <CsvButton name="wecodee-users.csv" rows={rows} />
         <DialogButton label="Add user" icon="plus" variant="primary" title="Add a user" description="They get an email to set their password. Supervisors and admins don’t take the quiz or join teams.">
-          <ActionForm action={createUser} reset>
+          <Mascot art="admin/profiles" className="ws-user-dialog-art" />
+          <ActionForm action={createUser} reset successArt="admin/completed" errorArt="admin/failed">
             <Field label="Full name" name="name" maxLength={120} autoComplete="off" required />
             <Field label="Email" name="email" type="email" maxLength={200} autoComplete="off" required />
             <div className="ws-form-row">
@@ -52,8 +53,8 @@ export default async function AdminUsers() {
                   <td>{formatDate(p.registeredAt)}</td>
                   <td>
                     {self ? <Badge tone="green">Active</Badge> : p.active ? (
-                      <ActionButton run={updateUser.bind(null, p.id, { active: false })} variant="danger-quiet" confirm={{ title: `Deactivate ${p.name}?`, body: "They won’t be able to sign in and are left out of team formation. You can reactivate them later.", action: "Deactivate", danger: true }}>Deactivate</ActionButton>
-                    ) : <ActionButton run={updateUser.bind(null, p.id, { active: true })}>Reactivate</ActionButton>}
+                      <ActionButton run={updateUser.bind(null, p.id, { active: false })} successArt="admin/completed" errorArt="admin/failed" variant="danger-quiet" confirm={{ title: `Deactivate ${p.name}?`, body: "They won’t be able to sign in and are left out of team formation. You can reactivate them later.", action: "Deactivate", danger: true }}>Deactivate</ActionButton>
+                    ) : <ActionButton run={updateUser.bind(null, p.id, { active: true })} successArt="admin/completed" errorArt="admin/failed">Reactivate</ActionButton>}
                   </td>
                 </tr>
               );

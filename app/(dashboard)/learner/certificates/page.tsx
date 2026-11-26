@@ -38,7 +38,7 @@ export default async function Certificates() {
             </article>
           )) : (
             <div className="ws-card">
-              <EmptyState still="badge" title="Your first certificate is on the way">
+              <EmptyState art="learner/certificate" title="How to earn your certificate">
                 Certificates are issued when your project is complete, to every member who confirmed contributions on at least {CERTIFICATE_MIN_MILESTONES} of 8 milestones.
               </EmptyState>
               {project && (

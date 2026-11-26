@@ -8,6 +8,7 @@ import { Badge, Card, Feedback, Forbidden, MilestoneBadge, PageHeader } from "@/
 import { ActionForm, Choices, DialogButton, Field, FieldError, Select, Submit, TextArea } from "@/components/workspace/forms";
 import { PageCrumb } from "@/components/workspace/Shell";
 import { Icon } from "@/components/workspace/Icon";
+import { MascotGuide, VisualSequence } from "@/components/workspace/Guidance";
 
 // Session-bound page: allowed to block on navigation (see the dashboard layout).
 export const instant = false;
@@ -126,31 +127,40 @@ export default async function ReviewPage({ params }: { params: Promise<{ project
           </div>
           <div className="ws-stack">
             {waiting ? (
-              <Card title="Your review">
-                <ActionForm action={reviewSubmission}>
-                  <input type="hidden" name="projectId" value={project.id} />
-                  <input type="hidden" name="order" value={milestone.order} />
-                  <fieldset className="ws-fieldset">
-                    <legend>Checklist</legend>
-                    <div style={{ display: "grid", gap: 8 }}>
-                      {milestone.checklist.map((c) => <label key={c} className="ws-check"><input type="checkbox" name="checklist" value={c} /><span>{c}</span></label>)}
-                    </div>
-                    <FieldError name="checklist" />
-                  </fieldset>
-                  <TextArea label="Comments for the team" name="comments" rows={5} maxLength={2000} placeholder="What works, what needs to change, and why." />
-                  <Choices legend="Decision" name="decision" options={[["approved", "Approve"], ["changes_requested", "Request changes"]]} />
-                  <p className="ws-small ws-muted">The team sees your decision and comments on their milestone page.</p>
-                  <div><Submit arrow>Send review</Submit></div>
-                </ActionForm>
-              </Card>
+              <>
+                <MascotGuide art="states/feedback" title="Give feedback the team can act on" compact>
+                  <p>Point to a specific part of the deliverable. If something is missing, explain what would satisfy that checklist item.</p>
+                </MascotGuide>
+                <Card title="Your review">
+                  <div className="ws-guidance-intro"><VisualSequence label="Review process" steps={[
+                    { label: "Open deliverable", icon: "file" },
+                    { label: "Check criteria", icon: "clipboard" },
+                    { label: "Record decision", icon: "check" },
+                  ]} /></div>
+                  <ActionForm action={reviewSubmission} successArt="supervisor/decision">
+                    <input type="hidden" name="projectId" value={project.id} />
+                    <input type="hidden" name="order" value={milestone.order} />
+                    <fieldset className="ws-fieldset">
+                      <legend>Checklist</legend>
+                      <div style={{ display: "grid", gap: 8 }}>
+                        {milestone.checklist.map((c) => <label key={c} className="ws-check"><input type="checkbox" name="checklist" value={c} /><span>{c}</span></label>)}
+                      </div>
+                      <FieldError name="checklist" />
+                    </fieldset>
+                    <TextArea label="Comments for the team" name="comments" rows={5} maxLength={2000} placeholder="What works, what needs to change, and why." />
+                    <Choices legend="Decision" name="decision" options={[["approved", "Approve"], ["changes_requested", "Request changes"]]} />
+                    <p className="ws-small ws-muted">The team sees your decision and comments on their milestone page.</p>
+                    <div><Submit arrow>Send review</Submit></div>
+                  </ActionForm>
+                </Card>
+              </>
             ) : (
-              <Card title="Review">
+              <Card title={submission.review ? "Review recorded" : "Review"}>
                 {submission.review ? (
-                  <div className="ws-stack" style={{ gap: 8 }}>
-                    {submission.review.decision === "approved" ? <Badge tone="green">Approved</Badge> : <Badge tone="red">Changes requested</Badge>}
+                  <MascotGuide art="supervisor/decision" title={submission.review.decision === "approved" ? "Milestone approved" : "Changes requested"} compact>
                     <p>{submission.review.comments}</p>
-                    <p className="ws-small ws-muted">{personById(data, submission.review.supervisorId)?.name} · {formatDateTime(submission.review.createdAt)}</p>
-                  </div>
+                    <p className="ws-small ws-guide-review">{personById(data, submission.review.supervisorId)?.name} · {formatDateTime(submission.review.createdAt)}</p>
+                  </MascotGuide>
                 ) : <p className="ws-muted">Not reviewed yet.</p>}
               </Card>
             )}

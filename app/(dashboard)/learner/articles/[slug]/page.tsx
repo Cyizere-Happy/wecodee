@@ -7,6 +7,8 @@ import { Card, PageHeader, QuietLink } from "@/components/workspace/ui";
 import { ActionButton } from "@/components/workspace/forms";
 import { PageCrumb } from "@/components/workspace/Shell";
 import { Icon } from "@/components/workspace/Icon";
+import { MascotGuide, VisualSequence } from "@/components/workspace/Guidance";
+import { milestoneGuide } from "@/lib/workspace/milestone-guide";
 
 // Session-bound page: allowed to block on navigation (see the dashboard layout).
 export const instant = false;
@@ -19,6 +21,8 @@ export default async function Article({ params }: { params: Promise<{ slug: stri
   const saved = data.savedArticles.includes(slug);
   const topics = data.topics.filter((t) => t.published && article.topicIds.includes(t.id));
   const milestones = data.templates.filter((m) => article.milestoneOrders.includes(m.order));
+  const mainMilestone = milestones.length === 1 ? milestones[0] : undefined;
+  const guide = mainMilestone && milestoneGuide(mainMilestone.order, mainMilestone.name);
 
   return (
     <div className="ws-content">
@@ -34,6 +38,14 @@ export default async function Article({ params }: { params: Promise<{ slug: stri
           <div className="ws-prose">{article.body.map((p, i) => <p key={i}>{p}</p>)}</div>
         </article>
         <div className="ws-stack">
+          {guide && <MascotGuide art="learner/concept" title="Apply this to your project" compact details={
+            <details className="ws-guide-example">
+              <summary>{guide.example}</summary>
+              <VisualSequence label={guide.example} steps={guide.steps} compare={"compare" in guide && guide.compare} />
+            </details>
+          }>
+            <p>{guide.goal}</p>
+          </MascotGuide>}
           {(topics.length > 0 || milestones.length > 0) && (
             <Card title="Linked" pad={false}>
               <ul className="ws-list">

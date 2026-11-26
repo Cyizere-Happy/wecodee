@@ -2,7 +2,8 @@ import Link from "next/link";
 import { loadWorkspace } from "@/lib/workspace/data";
 import { myTeam, profileComplete } from "@/lib/workspace/selectors";
 import { QUIZ_RETAKE_DAYS, formatDate, nowMs } from "@/lib/workspace/rules";
-import { Badge, Card, EmptyState, Meter, PageHeader, Tip } from "@/components/workspace/ui";
+import { Badge, Card, EmptyState, Meter, PageHeader } from "@/components/workspace/ui";
+import { MascotGuide } from "@/components/workspace/Guidance";
 import { QuizRunner } from "@/components/workspace/quiz";
 
 export const metadata = { title: "Skills quiz" };
@@ -50,9 +51,9 @@ export default async function Quiz() {
               <Badge tone="ink" plain>{quiz.skillLevel}</Badge>
             </div>
           </Card>
-          <Tip still="medal" title={placed ? "You’re placed in a team." : p.optedIn ? "You’re in the placement pool." : "You opted out of a project team."}>
-            {placed ? " Your level stays with your team; retakes are closed after placement." : p.optedIn ? " Teams form weekly. We’ll email you when yours is ready." : " You can opt in from Settings at any time."}
-          </Tip>
+          <MascotGuide art="learner/quiz" title={placed ? "Your placement is confirmed" : p.optedIn ? "You’re in the placement pool" : "Team placement is off"} compact>
+            <p>{placed ? "Retakes close once you join a team." : p.optedIn ? "Teams form weekly. We’ll email you when yours is ready." : "You can opt in from Settings at any time."}</p>
+          </MascotGuide>
           {!placed && !quiz.retakeUsed && (
             canRetake ? <QuizRunner chosenLevel={p.experienceLevel} retake /> : (
               <p className="ws-small ws-muted">You can retake the quiz once from {formatDate(new Date(retakeAt).toISOString())}, if you haven’t been placed by then.</p>

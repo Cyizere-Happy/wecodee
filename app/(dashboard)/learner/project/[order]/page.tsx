@@ -4,7 +4,9 @@ import { loadWorkspace } from "@/lib/workspace/data";
 import { isLeader, isOverdue, myTeam, personById, teamProject } from "@/lib/workspace/selectors";
 import { formatDate, formatDateTime, relativeDays } from "@/lib/workspace/rules";
 import { confirmContribution, markMilestoneTopicWatched, setMilestoneDue, submitMilestone } from "@/lib/workspace/actions";
-import { Badge, Card, EmptyState, Feedback, Mascot, MilestoneBadge, PageHeader, QuietLink } from "@/components/workspace/ui";
+import { Badge, Card, EmptyState, MilestoneBadge, PageHeader, QuietLink } from "@/components/workspace/ui";
+import { MascotGuide, VisualSequence } from "@/components/workspace/Guidance";
+import { milestoneGuide } from "@/lib/workspace/milestone-guide";
 import { ActionButton, ActionForm, DialogButton, Field, FieldError, Submit, TextArea } from "@/components/workspace/forms";
 import { PageCrumb } from "@/components/workspace/Shell";
 import { Icon } from "@/components/workspace/Icon";
@@ -28,6 +30,17 @@ export default async function MilestonePage({ params }: { params: Promise<{ orde
   const confirmed = new Map(milestone.pendingContributions.map((c) => [c.userId, c.text]));
   const latest = milestone.submissions.at(-1);
   const overdue = isOverdue(milestone);
+  const guide = milestoneGuide(order, milestone.name);
+  const preview = guide && (
+    <MascotGuide art={guide.art} title="What you’re building" compact details={
+      <details className="ws-guide-example">
+        <summary>{guide.example}</summary>
+        <VisualSequence label={guide.example} steps={guide.steps} compare={"compare" in guide && guide.compare} />
+      </details>
+    }>
+      <p>{guide.goal}</p>
+    </MascotGuide>
+  );
 
   return (
     <div className="ws-content">
@@ -52,28 +65,26 @@ export default async function MilestonePage({ params }: { params: Promise<{ orde
       />
 
       {milestone.status === "locked" ? (
-        <div className="ws-card"><EmptyState still="lock" title="This milestone is still locked" actions={<Link href="/learner/project" className="ws-btn ws-btn-secondary">Back to project</Link>}>It opens when milestone {order - 1} is approved. One milestone at a time keeps everyone moving together.</EmptyState></div>
+        <div className="ws-grid-2">
+          <div className="ws-card"><EmptyState still="lock" title="This milestone is still locked" actions={<Link href="/learner/project" className="ws-btn ws-btn-secondary">Back to project</Link>}>It opens when milestone {order - 1} is approved.</EmptyState></div>
+          {preview}
+        </div>
       ) : (
         <div className="ws-grid-2">
           <div className="ws-stack">
-            {milestone.status === "submitted" && (
-              <section className="ws-card" style={{ overflow: "hidden" }}>
-                <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", alignItems: "center" }}>
-                  <div className="ws-card-body"><h2 className="ws-h2">On its way to your supervisor</h2><p className="ws-small ws-muted" style={{ marginTop: 4 }}>Version {latest?.version} was submitted {latest && formatDateTime(latest.createdAt)}. The review shows up here and in Notifications.</p></div>
-                  <Mascot scene="launch" style={{ height: 150 }} />
-                </div>
-              </section>
-            )}
+            {milestone.status === "submitted" && <MascotGuide art="states/waiting" title="Waiting for supervisor review" compact>
+              <p>{latest && <>Version {latest.version} was submitted {formatDateTime(latest.createdAt)}. </>}The review will appear here when your supervisor records it.</p>
+            </MascotGuide>}
             {milestone.status === "approved" && (
-              <section className="ws-card" style={{ overflow: "hidden" }}>
-                <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", alignItems: "center" }}>
-                  <div className="ws-card-body"><h2 className="ws-h2">Approved. Nice work.</h2><p className="ws-small ws-muted" style={{ marginTop: 4 }}>{order < 8 ? `Milestone ${order + 1} is now open.` : "Your project is complete."}</p>{order < 8 && <div style={{ marginTop: 10 }}><QuietLink href={"/learner/project/" + (order + 1)}>Go to milestone {order + 1}</QuietLink></div>}</div>
-                  <Mascot scene="celebrate" style={{ height: 150 }} />
-                </div>
-              </section>
+              <MascotGuide art={order < 8 ? "states/approved" : "states/project-complete"} title="Milestone approved" compact action={order < 8 ? <QuietLink href={"/learner/project/" + (order + 1)}>Go to milestone {order + 1}</QuietLink> : <QuietLink href="/learner/certificates">Check certificates</QuietLink>}>
+                <p>{order < 8 ? `Milestone ${order + 1} is now open.` : "Your project is complete."}</p>
+              </MascotGuide>
             )}
             {milestone.status === "changes_requested" && latest?.review && (
-              <Feedback tone="error"><strong>Changes requested by {personById(data, latest.review.supervisorId)?.name}:</strong> {latest.review.comments}</Feedback>
+              <MascotGuide art="states/feedback" title="Use the feedback to prepare your next version" compact>
+                <p><strong>{personById(data, latest.review.supervisorId)?.name ?? "Your supervisor"}</strong></p>
+                <p className="ws-guide-review">{latest.review.comments}</p>
+              </MascotGuide>
             )}
 
             {open && (
@@ -86,6 +97,8 @@ export default async function MilestonePage({ params }: { params: Promise<{ orde
                     </div>
                   ) : <p className="ws-small ws-muted">No Hot Topic is linked to this milestone.</p>}
                 </Card>
+
+                {preview}
 
                 <Card title={<StepTitle n={2} done={team.members.every((m) => confirmed.has(m.userId))} title="Everyone confirms their contribution" />}>
                   <ul style={{ display: "grid", gap: 10 }}>
@@ -109,7 +122,12 @@ export default async function MilestonePage({ params }: { params: Promise<{ orde
 
                 <Card title={<StepTitle n={3} done={false} title={leader ? "Submit for review" : "Your leader submits"} />}>
                   {leader ? (
-                    <ActionForm action={submitMilestone}>
+                    <ActionForm action={submitMilestone} successArt="states/received">
+                      {milestone.topicWatched && team.members.every((member) => confirmed.has(member.userId)) && (
+                        <MascotGuide art="states/submission" title="Ready to prepare your submission" compact>
+                          <p>Attach the deliverable, disclose any AI use, and tell your supervisor what to look for.</p>
+                        </MascotGuide>
+                      )}
                       <input type="hidden" name="order" value={order} />
                       <Field label="Link" name="link" type="url" placeholder="Google Docs, GitHub or a live URL" help="A link, a file, or both." />
                       <Field label="File (optional)" name="file" type="file" accept=".pdf,.docx,.zip" help="PDF, DOCX or ZIP, up to 10 MB." />
@@ -125,6 +143,7 @@ export default async function MilestonePage({ params }: { params: Promise<{ orde
           </div>
 
           <div className="ws-stack">
+            {!open && preview}
             <Card title="What your supervisor checks">
               <ul style={{ display: "grid", gap: 8 }}>{milestone.checklist.map((c) => <li key={c} className="ws-row ws-small" style={{ alignItems: "flex-start" }}><Icon name="check" size={12.5} className="ws-faint" />{c}</li>)}</ul>
             </Card>

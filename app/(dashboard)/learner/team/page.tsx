@@ -8,6 +8,7 @@ import { ActionButton, ActionForm, DialogButton, Field, Submit, TextArea } from 
 import { RoleEditor } from "@/components/workspace/team";
 import { MilestonePath } from "@/components/workspace/MilestonePath";
 import { Icon } from "@/components/workspace/Icon";
+import { VisualSequence } from "@/components/workspace/Guidance";
 
 export const metadata = { title: "Team" };
 
@@ -27,19 +28,26 @@ export default async function TeamPage() {
         <PageHeader eyebrow="Build" title="Team" lead="Teams of five, matched by the platform and guided by a supervisor." />
         <div className="ws-grid-2">
           <div className="ws-card">
-            <EmptyState still="door" title={!data.profile.optedIn ? "You’ve opted out of a project team" : quizDone ? "You’re in the placement pool" : "Your team is waiting behind this door"}
+            <EmptyState art="learner/team" title={!data.profile.optedIn ? "You’ve opted out of a project team" : quizDone ? "You’re in the placement pool" : "Take the quiz to join a team"}
               actions={!data.profile.optedIn ? <Link href="/settings" className="ws-btn ws-btn-secondary">Opt in from Settings</Link> : !quizDone ? <Link href="/learner/quiz" className="ws-btn ws-btn-primary">Take the skills quiz<span className="ws-arrow" aria-hidden>→</span></Link> : null}>
               {!data.profile.optedIn ? "You can still learn with Hot Topics, articles and events." : quizDone ? "Teams form every week. You’ll get an email with your team, leader and next steps." : "Finish the skills quiz to join the placement pool."}
             </EmptyState>
           </div>
           <Card title="How teams are formed">
-            <ol style={{ display: "grid", gap: 12, listStyle: "decimal", paddingLeft: 18 }} className="ws-small">
-              <li><strong>Same level.</strong> <span className="ws-muted">Teams are grouped by skill level from your quiz.</span></li>
-              <li><strong>A leader first.</strong> <span className="ws-muted">Chosen from skills and activity, with reliable time and internet.</span></li>
-              <li><strong>Balanced.</strong> <span className="ws-muted">At least two women and two men where possible, never one alone.</span></li>
-              <li><strong>Ready together.</strong> <span className="ws-muted">At least two members with high readiness, and working times that overlap.</span></li>
-              <li><strong>Mixed skills.</strong> <span className="ws-muted">Front end, back end, mobile, data, design and DevOps, spread across the team.</span></li>
-            </ol>
+            <VisualSequence label="Team formation" steps={[
+              { label: "Skills quiz", icon: "quiz", detail: "Teams are grouped by quiz level.", state: quizDone ? "done" : data.profile.optedIn ? "current" : "pending" },
+              { label: "Team matching", icon: "users", detail: "Teams share working hours and bring different skills.", state: quizDone && data.profile.optedIn ? "current" : "pending" },
+              { label: "Group approval", icon: "whatsapp", detail: "Your supervisor checks the group before project work starts.", state: "pending" },
+            ]} />
+            <details className="ws-guide-example">
+              <summary>What goes into matching</summary>
+              <ul className="ws-match-notes">
+                <li>Leader selection considers skills, activity, availability, and internet access.</li>
+                <li>Teams aim for at least two women and two men where possible, without leaving one person as the only member of their gender.</li>
+                <li>Teams look for overlapping working hours and at least two members with high readiness.</li>
+                <li>Skills can include front end, back end, mobile, data, design, and DevOps.</li>
+              </ul>
+            </details>
           </Card>
         </div>
       </div>
@@ -79,7 +87,7 @@ export default async function TeamPage() {
                 <ActionButton run={acceptLeadership.bind(null, false)} variant="ghost" size="md" confirm={{ title: "Pass on the leader role?", body: "The role goes to the next teammate. You stay in the team as a member.", action: "Decline", danger: true }}>Decline</ActionButton>
               </div>
             </div>
-            <Mascot still="badge" style={{ height: 260 }} />
+            <Mascot art="learner/team" className="ws-team-illustration" />
           </div>
         </section>
       )}

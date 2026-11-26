@@ -48,3 +48,14 @@ export const clips = {
 export type StillName = keyof typeof stills;
 export type SceneName = keyof typeof scenes;
 export type ClipName = keyof typeof clips;
+
+export type ArtName =
+  | `milestones/${"problem" | "proposal" | "requirements" | "design" | "implementation" | "testing" | "deployment" | "presentation"}`
+  | `learner/${"welcome" | "concept" | "practice" | "lesson" | "prompt" | "quiz" | "team" | "portfolio" | "certificate"}`
+  | `states/${"submission" | "received" | "waiting" | "feedback" | "approved" | "project-complete"}`
+  | `supervisor/${"review" | "teams" | "decision"}`
+  | `admin/${"control" | "profiles" | "library" | "analytics" | "settings-saved" | "published" | "completed" | "failed" | "maintenance"}`;
+
+export function mascotArtSrc(art: ArtName) {
+  return `/illustrations/mascot/${art}.webp`;
+}
