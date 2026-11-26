@@ -8,6 +8,7 @@ import { ActionButton, ActionForm, Field, Select, Submit, TextArea } from "@/com
 import { PageCrumb } from "@/components/workspace/Shell";
 import { LessonArt } from "@/components/workspace/learning/LessonParts";
 import { WorkflowRail } from "@/components/workspace/learning/WorkflowRail";
+import { ChecklistProgress } from "@/components/workspace/VisualSummary";
 
 const TEMPLATE = `You are my patient coding tutor. I'm a {level} learner working on: {topic}.
 Explain the idea in simple terms with one small example.
@@ -52,6 +53,12 @@ export default async function EditHotTopic({ params }: { params: Promise<{ id: s
           </div>
         </section>
       )}
+      {topic && <div className="ws-visual-context"><ChecklistProgress label="Lesson components" showLabels items={[
+        { label: "Title and draft", complete: Boolean(topic.title) },
+        { label: "Video link", complete: Boolean(topic.youtubeUrl) },
+        { label: "Coaching prompt", complete: Boolean(topic.masterPrompt) },
+        { label: "3–5 check questions", complete: ready },
+      ]} /></div>}
       <div className="ws-grid-2">
         <Card title="Details">
           <ActionForm action={saveTopic}>

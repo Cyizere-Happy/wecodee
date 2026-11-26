@@ -5,6 +5,8 @@ import { formatDate, formTeams } from "@/lib/workspace/rules";
 import { adminTeamChange, confirmFormation, moveMember } from "@/lib/workspace/actions";
 import { Badge, Card, EmptyState, Forbidden, PageHeader, Tip } from "@/components/workspace/ui";
 import { ActionButton, ActionForm, Choices, DialogButton, Select, Submit, TextArea } from "@/components/workspace/forms";
+import { StateBreakdown } from "@/components/workspace/VisualSummary";
+import { WorkflowRail } from "@/components/workspace/learning/WorkflowRail";
 
 export const metadata = { title: "Teams & formation" };
 
@@ -20,7 +22,15 @@ export default async function AdminTeams() {
 
   return (
     <div className="ws-content">
-      <PageHeader eyebrow="Admin" title="Teams & formation" lead={`Teams of ${data.settings.teamSize} are formed by level, mixing readiness, gender and skills. Each gets the supervisor with the fewest active teams (cap ${data.settings.supervisorCap}).`} />
+      <PageHeader eyebrow="Admin" title="Teams & formation" lead="Review the proposed match before placing learners." />
+      <div className="ws-visual-context">
+        <WorkflowRail label="Team formation workflow" steps={[
+          { label: "Placement pool", icon: "inbox", detail: "Verified, opted in, quiz completed" },
+          { label: "Match learners", icon: "users", detail: `${data.settings.teamSize} learners per team by level, with mixed readiness, gender and skills`, state: "current" },
+          { label: "Assign supervisor", icon: "user", detail: `Fewest active teams · cap ${data.settings.supervisorCap}` },
+          { label: "Set up the group", icon: "whatsapp", detail: "Leader accepts and submits a group link" },
+        ]} />
+      </div>
 
       <section className="ws-section">
         <div className="ws-section-head">
@@ -51,6 +61,11 @@ export default async function AdminTeams() {
 
       <section className="ws-section">
         <div className="ws-section-head"><h2 className="ws-h2">All teams</h2><Badge plain>{teams.length}</Badge></div>
+        <StateBreakdown label="Formed teams by status" parts={[
+          { label: "Pending group", value: teams.filter((team) => team.status === "pending_group").length, tone: "amber" },
+          { label: "Active", value: teams.filter((team) => team.status === "active").length, tone: "red" },
+          { label: "Completed", value: teams.filter((team) => team.status === "completed").length, tone: "green" },
+        ]} />
         <div className="ws-table-wrap">
           <table className="ws-table">
             <thead><tr><th>Team</th><th>Leader</th><th>Supervisor</th><th>Status</th><th>Project</th><th></th></tr></thead>

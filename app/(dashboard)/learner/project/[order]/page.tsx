@@ -10,6 +10,7 @@ import { ActionButton, ActionForm, DialogButton, Field, FieldError, Submit, Text
 import { PageCrumb } from "@/components/workspace/Shell";
 import { Icon } from "@/components/workspace/Icon";
 import { RequirementsStudio } from "@/components/workspace/learning/RequirementsStudio";
+import { ChecklistProgress } from "@/components/workspace/VisualSummary";
 import { MilestoneStudio } from "@/components/workspace/learning/MilestoneStudios";
 
 const exampleSrsFeedback = "Good structure. FR-4 and FR-9 aren't testable yet: add measurable conditions. Please also add non-functional requirements for data use on phones.";
@@ -116,6 +117,11 @@ export default async function MilestonePage({ params }: { params: Promise<{ orde
             )}
 
                 <div id="milestone-contributions" className="ws-lesson-anchor"><Card title={<StepTitle n={2} done={team.members.every((m) => confirmed.has(m.userId))} title="Everyone confirms their contribution" />}>
+                  <ChecklistProgress label="Team confirmations" items={team.members.map((member) => ({
+                    label: member.userId === viewer.id ? "You" : personById(data, member.userId)?.name ?? "Team member",
+                    complete: confirmed.has(member.userId),
+                  }))} />
+                  <div className="ws-divider" />
                   <ul style={{ display: "grid", gap: 10 }}>
                     {team.members.map((m) => {
                       const text = confirmed.get(m.userId);

@@ -3,8 +3,9 @@ import { loadWorkspace } from "@/lib/workspace/data";
 import { learnerStats, myTeam, teamProject } from "@/lib/workspace/selectors";
 import { formatDate, nowMs } from "@/lib/workspace/rules";
 import { Badge, Card, EmptyState, Initials, PageHeader, Stats } from "@/components/workspace/ui";
-import { MascotGuide } from "@/components/workspace/Guidance";
 import { PreferenceSwitch } from "@/components/workspace/prefs";
+import { WorkshopArt } from "@/components/workspace/learning/EditorialVisuals";
+import { WorkflowRail } from "@/components/workspace/learning/WorkflowRail";
 
 export const metadata = { title: "Portfolio" };
 
@@ -28,9 +29,21 @@ export default async function Portfolio() {
       <PageHeader
         eyebrow="Showcase"
         title="Portfolio"
-        lead={<>This is how your portfolio looks to others at <span className="mono">/u/{p.username}</span>. Your email and WhatsApp number are never shown.</>}
+        lead={<>Your public address is <span className="mono">/u/{p.username}</span>. Your email and WhatsApp number are never shown.</>}
         actions={<Badge tone={p.portfolioPublic ? "green" : undefined}>{p.portfolioPublic ? "Public" : "Private"}</Badge>}
       />
+
+      <section className="ws-showcase-overview" aria-labelledby="showcase-title">
+        <div>
+          <h2 id="showcase-title" className="ws-h2">Build your showcase</h2>
+          <WorkflowRail label="Portfolio sections" steps={[
+            { label: "Profile", icon: "user", detail: <Link className="ws-link" href="/settings#profile">Edit bio and skills</Link>, state: p.bio ? "complete" : "current" },
+            { label: "Projects", icon: "panel", detail: project?.title ?? "Waiting for a team project", state: project?.status === "complete" ? "complete" : "upcoming" },
+            { label: "Recognition", icon: "award", detail: `${certs.length} valid ${certs.length === 1 ? "certificate" : "certificates"}`, state: certs.length ? "complete" : "upcoming" },
+          ]} />
+        </div>
+        <WorkshopArt scene="portfolio" />
+      </section>
 
       <div className="ws-grid-2">
         <div className="ws-stack">
@@ -76,9 +89,6 @@ export default async function Portfolio() {
         </div>
 
         <div className="ws-stack">
-          <MascotGuide art="learner/portfolio" title="Show your role in the work" compact>
-            <p>Add a short bio and skills in Settings. Your projects, team roles, and certificates appear as you earn them.</p>
-          </MascotGuide>
           <Card title="Visibility">
             <PreferenceSwitch name="portfolioPublic" value={p.portfolioPublic} disabled={minor && !p.portfolioPublic} label="Public portfolio" description={minor ? "Learners under 18 stay private unless a guardian approves." : "Anyone with the link can see it. Private by default."} />
           </Card>

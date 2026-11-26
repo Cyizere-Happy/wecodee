@@ -9,6 +9,7 @@ import { PageCrumb } from "@/components/workspace/Shell";
 import { Icon } from "@/components/workspace/Icon";
 import { WorkflowRail } from "@/components/workspace/learning/WorkflowRail";
 import { milestoneGuide } from "@/lib/workspace/milestone-guide";
+import { EditorialArticle } from "@/components/workspace/learning/EditorialVisuals";
 
 // Session-bound page: allowed to block on navigation (see the dashboard layout).
 export const instant = false;
@@ -33,10 +34,8 @@ export default async function Article({ params }: { params: Promise<{ slug: stri
         lead={article.excerpt}
         actions={<ActionButton run={toggleSavedArticle.bind(null, slug)} variant={saved ? "secondary" : "primary"} size="md" icon={saved ? "check" : "download"}>{saved ? "Saved article" : "Save article"}</ActionButton>}
       />
-      <div className="ws-grid-2">
-        <article className="ws-editorial-article">
-          <div className="ws-prose">{article.body.map((p, i) => <p key={i}>{p}</p>)}</div>
-        </article>
+      <div className="ws-article-layout">
+        <EditorialArticle slug={slug} paragraphs={article.body} />
         <div className="ws-stack">
           {guide && <section className="ws-priority" aria-labelledby="article-application">
             <h2 id="article-application">Apply this to your project</h2>

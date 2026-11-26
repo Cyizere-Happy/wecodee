@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { loadWorkspace } from "@/lib/workspace/data";
-import { isOverdue, memberViews, personById, reportGrid, supervisesTeam, teamProject, workingDays } from "@/lib/workspace/selectors";
+import { dailyReportHours, isOverdue, memberViews, openBlockers, personById, reportGrid, supervisesTeam, teamProject, workingDays } from "@/lib/workspace/selectors";
 import { formatDate } from "@/lib/workspace/rules";
 import { Badge, Card, Forbidden, Meter, MilestoneBadge, PageHeader, ReadinessBadge } from "@/components/workspace/ui";
 import { ReportGrid } from "@/components/workspace/ReportGrid";
 import { MilestonePath } from "@/components/workspace/MilestonePath";
 import { PageCrumb } from "@/components/workspace/Shell";
 import { WorkflowRail } from "@/components/workspace/learning/WorkflowRail";
+import { DailyHours } from "@/components/workspace/VisualSummary";
 
 // Session-bound page: allowed to block on navigation (see the dashboard layout).
 export const instant = false;
@@ -24,6 +25,9 @@ export default async function SupervisedTeam({ params }: { params: Promise<{ id:
   const days = workingDays(14);
   const grid = reportGrid(team, data.reports, days);
   const approved = project?.milestones.filter((milestone) => milestone.status === "approved").length ?? 0;
+  const memberIds = new Set(members.map((member) => member.id));
+  const hours = dailyReportHours(data.reports.filter((report) => memberIds.has(report.userId)), days);
+  const blockers = openBlockers(data, [team.id]);
 
   return (
     <div className="ws-content">
@@ -32,7 +36,7 @@ export default async function SupervisedTeam({ params }: { params: Promise<{ id:
         eyebrow={`${team.level} · formed ${formatDate(team.formedAt)}`}
         title={team.name}
         lead={project ? `${project.title}: ${project.solution}` : "No project yet."}
-        actions={<>{team.status === "active" ? <Badge tone="green">Active</Badge> : <Badge tone="amber">Pending group</Badge>}{team.whatsappLink && <a className="ws-btn ws-btn-secondary ws-btn-sm" href={team.whatsappLink} target="_blank" rel="noreferrer">WhatsApp group</a>}</>}
+        actions={<>{team.status === "completed" ? <Badge tone="green">Completed</Badge> : team.status === "active" ? <Badge tone="green">Active</Badge> : <Badge tone="amber">Pending group</Badge>}{team.whatsappLink && <a className="ws-btn ws-btn-secondary ws-btn-sm" href={team.whatsappLink} target="_blank" rel="noreferrer">WhatsApp group</a>}</>}
       />
       <div className="ws-stack">
         {project ? (
@@ -64,9 +68,17 @@ export default async function SupervisedTeam({ params }: { params: Promise<{ id:
             </tbody>
           </table>
         </div>
-        <Card title="Daily reports · last 14 working days">
-          <ReportGrid days={days} rows={grid.map((r) => ({ ...r, name: (personById(data, r.userId)?.name ?? "Member").split(" ")[0], hours: data.reports.filter((x) => x.userId === r.userId && days.includes(x.date)).reduce((s, x) => s + Math.min(12, x.hours), 0) }))} />
-        </Card>
+        <div className="ws-grid-2">
+          <Card title="Daily reports · last 14 working days">
+            <ReportGrid days={days} rows={grid.map((r) => ({ ...r, name: (personById(data, r.userId)?.name ?? "Member").split(" ")[0], hours: data.reports.filter((x) => x.userId === r.userId && days.includes(x.date)).reduce((s, x) => s + Math.min(12, x.hours), 0) }))} />
+          </Card>
+          <div className="ws-stack">
+            <section className="ws-visual-context"><DailyHours days={hours} /></section>
+            <Card title="Open blockers">
+              {blockers.length ? <ol className="ws-timeline">{blockers.map((blocker) => <li key={blocker.id} data-tone="red"><p>{blocker.blockers}</p><time dateTime={blocker.date}>{formatDate(blocker.date + "T12:00:00Z")}</time></li>)}</ol> : <p className="ws-muted">No open blockers</p>}
+            </Card>
+          </div>
+        </div>
         {project && (
           <div className="ws-table-wrap">
             <table className="ws-table">

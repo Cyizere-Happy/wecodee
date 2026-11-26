@@ -3,6 +3,7 @@ import { personById, teamProject } from "@/lib/workspace/selectors";
 import { formatDate, kigaliDay, nowMs } from "@/lib/workspace/rules";
 import { Badge, Card, Feedback, Forbidden, Meter, PageHeader, QuietLink, Stats } from "@/components/workspace/ui";
 import { CsvButton } from "@/components/workspace/bits";
+import { StateBreakdown } from "@/components/workspace/VisualSummary";
 
 export const metadata = { title: "Reports" };
 
@@ -94,10 +95,12 @@ export default async function AdminReports() {
           </div>
         </Card>
         <Card title="Teams">
+          <StateBreakdown label="Team status" parts={[
+            { label: "Waiting for a group", value: teams.filter((team) => team.status === "pending_group").length, tone: "amber" },
+            { label: "Active", value: teams.filter((team) => team.status === "active").length, tone: "red" },
+            { label: "Completed", value: teams.filter((team) => team.status === "completed").length, tone: "green" },
+          ]} />
           <dl className="ws-kv">
-            <dt>Active</dt><dd>{teams.filter((t) => t.status === "active").length}</dd>
-            <dt>Waiting for a group</dt><dd>{teams.filter((t) => t.status === "pending_group").length}</dd>
-            <dt>Completed</dt><dd>{teams.filter((t) => t.status === "completed").length}</dd>
             <dt>Projects</dt><dd>{projects.length} ({projects.filter((p) => p.status === "complete").length} complete)</dd>
           </dl>
         </Card>
@@ -110,6 +113,10 @@ export default async function AdminReports() {
           <div className="ws-bars" style={{ marginTop: 14.5 }}>{readiness.map(([r, n]) => bar(r, n, learners.length, r === "Low" ? "red" : undefined))}</div>
         </Card>
         <Card title="Delivery">
+          {expected > 0 && <StateBreakdown label="Daily reports · last 5 working days" parts={[
+            { label: "Sent", value: sent, tone: "green" },
+            { label: "Missing", value: Math.max(0, expected - sent), tone: "ink" },
+          ]} />}
           <dl className="ws-kv">
             <dt>Daily-report rate</dt><dd>{pct(sent, expected)}% <span className="ws-faint ws-small">({sent} of {expected}, last 5 working days)</span></dd>
             <dt>Report hours logged</dt><dd>{reportHours} h</dd>

@@ -9,35 +9,28 @@ import { AuthIllustration } from "./AuthIllustration";
 import { AuthText } from "./AuthText";
 import { AuthLink } from "./AuthLink";
 import { AuthNotice, StatusPage, type StatusCode } from "./StatusPage";
+import { AuthPath } from "./AuthPath";
 
 const copy = {
   login: {
     title: "Good to have you back.",
-    lead: "Pick up where your ideas left off.",
+    lead: "Sign in to your WeCodee workspace.",
     action: "Sign in",
-    art: "Your ideas missed you.",
-    caption: "There’s always something more to build.",
   },
   signup: {
     title: "Make room for your ideas.",
-    lead: "Your own space to learn, experiment, and build something extraordinary.",
+    lead: "Create your WeCodee account to start building.",
     action: "Create my account",
-    art: "A little space for big things.",
-    caption: "Every great project begins somewhere.",
   },
   forgot: {
     title: "Lost your key?",
-    lead: "It happens to the best of builders. Enter your email and we’ll help you find your way back.",
+    lead: "Enter your account email to request a password recovery link.",
     action: "Send recovery link",
-    art: "Every builder takes a little detour.",
-    caption: "",
   },
   reset: {
     title: "A fresh start.",
-    lead: "A new password. The same big ideas.",
+    lead: "Choose a new password for your account.",
     action: "Reset password",
-    art: "Good as new.",
-    caption: "",
   },
 } as const;
 type Mode = keyof typeof copy | "verify";
@@ -172,8 +165,10 @@ export function AuthScreen({ mode, token: queryToken = "" }: { mode: Mode; token
     setFields(errors);
     setMessage(Object.keys(errors).length ? "Check the highlighted fields and try again." : "");
     if (Object.keys(errors).length) {
-      const target = event.currentTarget.elements.namedItem(Object.keys(errors)[0]);
-      if (target instanceof HTMLElement) target.focus();
+      const firstInvalid = Array.from(event.currentTarget.elements).find(
+        (field): field is HTMLInputElement => field instanceof HTMLInputElement && Object.hasOwn(errors, field.name),
+      );
+      firstInvalid?.focus();
       return;
     }
 
@@ -265,11 +260,11 @@ export function AuthScreen({ mode, token: queryToken = "" }: { mode: Mode; token
   }
 
   if (view === "verified") {
-    return <AuthNotice title="You’re all set." text="The world is yours to build." artwork="email-verified"
+    return <AuthNotice title="Email verified." text="Sign in to set up your builder profile." artwork="email-verified"
       description="The sheep smiles beside a verification symbol." href="/login" action="Sign in" />;
   }
   if (view === "reset-done") {
-    return <AuthNotice title="Good as new." text="Your password has been updated. Let’s get you back to building."
+    return <AuthNotice title="Password updated." text="Use your new password to sign in."
       artwork="password-changed" description="The sheep holds a small security lock." href="/login" action="Back to sign in" />;
   }
   if ((mode === "reset" || mode === "verify") && fragmentToken === null && !queryToken) {
@@ -282,7 +277,7 @@ export function AuthScreen({ mode, token: queryToken = "" }: { mode: Mode; token
     const expired = view === "expired" || resetCheck === "expired";
     const detail = expired ? "This link has expired. Let’s get you a fresh one."
       : "This link is missing, invalid, or already used. Let’s get you a fresh one.";
-    return <AuthNotice title="A little too late." text={detail} artwork="expired-link"
+    return <AuthNotice title={expired ? "This link expired." : "This link can’t be used."} text={detail} artwork="expired-link"
       description="The sheep examines a red-and-white hourglass."
       href={verification ? "/verify-email?request=1" : "/forgot-password"} action="Request a new link" />;
   }
@@ -301,15 +296,13 @@ export function AuthScreen({ mode, token: queryToken = "" }: { mode: Mode; token
       <section className="auth-grid auth-receipt" aria-labelledby="auth-title" key={view}>
         <div className="auth-content">
           <Intro
-            title={isVerification ? "You’ve got mail." : "Check your inbox."}
-            lead={isVerification ? "One little step before the big things begin."
+            title={isVerification && hasVerificationLink ? "Verify your email." : "Check your inbox."}
+            lead={isVerification ? hasVerificationLink ? "Confirm this address to finish setting up your account." : "Open the verification link to confirm your email."
               : "If an account exists for this email, you’ll receive a password recovery link shortly."}
           />
+          <AuthPath kind={isVerification ? "account" : "recovery"} current={1} />
           {email && <span className="auth-address">{email}</span>}
-          <p className="auth-lead">
-            {hasVerificationLink ? "Confirm your email to finish setting up WeCodee."
-              : "If you don’t see the email, check your spam folder or request another link."}
-          </p>
+          {!hasVerificationLink && <p className="auth-lead">Check your spam folder or request another link if the email hasn’t arrived.</p>}
           <form className="auth-form" onSubmit={submit} noValidate>
             {!email && !hasVerificationLink && <AuthField label="Email address" name="email" type="email" autoComplete="email" required error={fields.email} />}
             {message && <p className="auth-feedback" role="status">{message}</p>}
@@ -320,9 +313,9 @@ export function AuthScreen({ mode, token: queryToken = "" }: { mode: Mode; token
           <p className="auth-alternate"><AuthLink href="/login" className="auth-link">Back to sign in</AuthLink></p>
         </div>
         {isVerification ? (
-          <AuthIllustration still={illustration("verify-email")} description="The sheep holds a white envelope with a red seal." title="Good things are on their way." compact />
+          <AuthIllustration still={illustration("verify-email")} description="The sheep holds a white envelope with a red seal." compact />
         ) : (
-          <AuthIllustration {...authMedia.forgot} video={undefined} title="Every builder takes a little detour." />
+          <AuthIllustration {...authMedia.forgot} video={undefined} />
         )}
       </section>
     );
@@ -335,6 +328,8 @@ export function AuthScreen({ mode, token: queryToken = "" }: { mode: Mode; token
     <section className="auth-grid" aria-labelledby="auth-title">
       <div className="auth-content">
         <Intro title={content.title} lead={content.lead} accentPeriod={accentPeriod} />
+        {mode === "signup" && <AuthPath kind="account" current={0} />}
+        {(mode === "forgot" || mode === "reset") && <AuthPath kind="recovery" current={mode === "forgot" ? 0 : 2} />}
         <form className="auth-form" onSubmit={submit} noValidate>
           {mode === "signup" && (
             <div className="auth-name-row">
@@ -371,12 +366,7 @@ export function AuthScreen({ mode, token: queryToken = "" }: { mode: Mode; token
             : <AuthLink href="/login" className="auth-link">Back to sign in</AuthLink>}
         </p>
       </div>
-      <AuthIllustration
-        {...authMedia[mode]}
-        title={content.art}
-        caption={content.caption}
-        accentPeriod={accentPeriod}
-      />
+      <AuthIllustration {...authMedia[mode]} />
     </section>
   );
 }

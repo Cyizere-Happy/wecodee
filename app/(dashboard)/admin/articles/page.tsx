@@ -2,8 +2,9 @@ import { loadWorkspace } from "@/lib/workspace/data";
 import { ARTICLE_WORD_LIMIT, formatDate } from "@/lib/workspace/rules";
 import { saveArticle } from "@/lib/workspace/actions";
 import type { Article, HotTopic, MilestoneTemplate } from "@/lib/workspace/types";
-import { Badge, Forbidden, PageHeader } from "@/components/workspace/ui";
+import { Badge, Forbidden, Meter, PageHeader } from "@/components/workspace/ui";
 import { ActionForm, Check, Choices, DialogButton, Field, Submit, TextArea } from "@/components/workspace/forms";
+import { StateBreakdown } from "@/components/workspace/VisualSummary";
 
 export const metadata = { title: "Articles" };
 
@@ -38,6 +39,10 @@ export default async function AdminArticles() {
       <PageHeader eyebrow="Admin" title="Articles" lead={`Short reads, ${ARTICLE_WORD_LIMIT} words at most, linked to Hot Topics and milestones.`} actions={
         <DialogButton label="New article" variant="primary" title="New article"><ArticleForm topics={data.topics} templates={data.templates} /></DialogButton>
       } />
+      <StateBreakdown label="Article publication" parts={[
+        { label: "Published", value: data.articles.filter((article) => article.published).length, tone: "green" },
+        { label: "Draft", value: data.articles.filter((article) => !article.published).length, tone: "ink" },
+      ]} />
       <div className="ws-table-wrap">
         <table className="ws-table">
           <thead><tr><th>Title</th><th>Words</th><th>Milestones</th><th>Published</th><th>Status</th><th></th></tr></thead>
@@ -45,7 +50,7 @@ export default async function AdminArticles() {
             {data.articles.map((a) => (
               <tr key={a.slug}>
                 <td><strong>{a.title}</strong><div className="ws-small ws-muted">{a.category}</div></td>
-                <td className="num">{a.wordCount}</td>
+                <td><div className="ws-article-length"><span>{a.wordCount} / {ARTICLE_WORD_LIMIT}</span><Meter value={a.wordCount} max={ARTICLE_WORD_LIMIT} label={`${a.title} word count`} /></div></td>
                 <td>{a.milestoneOrders.map((o) => "M" + o).join(", ") || "–"}</td>
                 <td>{formatDate(a.publishedAt)}</td>
                 <td>{a.published ? <Badge tone="green">Published</Badge> : <Badge>Draft</Badge>}</td>

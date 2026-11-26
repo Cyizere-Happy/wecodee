@@ -54,7 +54,8 @@ export type ArtName =
   | `learner/${"welcome" | "concept" | "practice" | "lesson" | "prompt" | "quiz" | "team" | "portfolio" | "certificate"}`
   | `states/${"submission" | "received" | "waiting" | "feedback" | "approved" | "project-complete"}`
   | `supervisor/${"review" | "teams" | "decision"}`
-  | `admin/${"control" | "profiles" | "library" | "analytics" | "settings-saved" | "published" | "completed" | "failed" | "maintenance"}`;
+  | `admin/${"control" | "profiles" | "library" | "analytics" | "settings-saved" | "published" | "completed" | "failed" | "maintenance"}`
+  | `stories/${"report-empty" | "review-filed"}`;
 
 export function mascotArtSrc(art: ArtName) {
   return `/illustrations/mascot/${art}.webp`;

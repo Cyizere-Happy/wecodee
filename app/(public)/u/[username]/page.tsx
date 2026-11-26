@@ -3,8 +3,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { findPortfolio } from "@/lib/workspace/public";
 import { formatDate } from "@/lib/workspace/rules";
-import { Badge, Card, EmptyState, Initials, Mascot } from "@/components/workspace/ui";
+import { Badge, Card, EmptyState, Initials } from "@/components/workspace/ui";
 import { PageSkeleton } from "@/components/workspace/Skeletons";
+import { Icon } from "@/components/workspace/Icon";
+import { WorkshopArt } from "@/components/workspace/learning/EditorialVisuals";
+import { StateBreakdown } from "@/components/workspace/VisualSummary";
 
 export const metadata = { title: "Portfolio · WeCodee" };
 
@@ -34,16 +37,21 @@ async function Portfolio({ params }: { params: Promise<{ username: string }> }) 
             </div>
             {p.skills.length > 0 && <div className="ws-tags">{p.skills.map((s) => <span key={s} className="ws-tag">{s}</span>)}</div>}
           </div>
-          <Mascot scene="idea" className="ws-public-art" />
+          <WorkshopArt scene="portfolio" />
         </div>
       </section>
       <div className="ws-stack" style={{ marginTop: 14.5 }}>
+        {p.projects.length > 0 && <StateBreakdown label="Projects in this portfolio" parts={[
+          { label: "Completed", value: p.projects.filter((project) => project.status === "complete").length, tone: "green" },
+          { label: "In progress", value: p.projects.filter((project) => project.status !== "complete").length, tone: "ink" },
+        ]} />}
         <Card title="Projects" pad={p.projects.length === 0}>
           {p.projects.length ? (
-            <ul className="ws-list">
+            <ul>
               {p.projects.map((pr) => (
-                <li key={pr.title} style={{ alignItems: "flex-start" }}>
-                  <div className="ws-list-main" style={{ display: "grid", gap: 3.5 }}>
+                <li key={pr.title} className="ws-showcase-entry">
+                  <Icon name="panel" size={20} />
+                  <div style={{ display: "grid", gap: 3.5 }}>
                     <p style={{ fontWeight: 650 }}>{pr.title} <Badge plain>{pr.status === "complete" ? "Complete" : "In progress"}</Badge></p>
                     <p style={{ whiteSpace: "normal" }}>{pr.solution}</p>
                     <p>{pr.roles.length ? pr.roles.join(", ") + " · " : ""}Team {pr.team}</p>

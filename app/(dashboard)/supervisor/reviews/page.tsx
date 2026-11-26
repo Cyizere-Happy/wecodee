@@ -3,6 +3,8 @@ import { loadWorkspace } from "@/lib/workspace/data";
 import { personById, supervisesTeam } from "@/lib/workspace/selectors";
 import { formatDateTime, relativeDays } from "@/lib/workspace/rules";
 import { Badge, EmptyState, Forbidden, PageHeader } from "@/components/workspace/ui";
+import { DateTile } from "@/components/workspace/VisualSummary";
+import { WorkflowRail } from "@/components/workspace/learning/WorkflowRail";
 
 export const metadata = { title: "Review queue" };
 
@@ -23,7 +25,15 @@ export default async function ReviewQueue() {
 
   return (
     <div className="ws-content">
-      <PageHeader eyebrow="Supervisor" title="Review queue" lead="Oldest first. Approve only when every checklist item is met; otherwise request changes with clear comments." />
+      <PageHeader eyebrow="Supervisor" title="Review queue" lead="Oldest submissions first." />
+      <div className="ws-visual-context">
+        <WorkflowRail label="Submission and feedback loop" steps={[
+          { label: "Submission", icon: "inbox", detail: `${waiting.length} waiting`, state: waiting.length ? "current" : undefined },
+          { label: "Review and feedback", icon: "clipboard", detail: "Check the deliverable and leave comments" },
+          { label: "Revision if needed", icon: "edit", detail: "The team submits a new version" },
+          { label: "Approval", icon: "check", detail: "Every checklist item must pass" },
+        ]} />
+      </div>
       <section className="ws-section">
         <div className="ws-section-head"><h2 className="ws-h2">Waiting for you</h2><Badge plain>{waiting.length}</Badge></div>
         {waiting.length ? (
@@ -36,7 +46,7 @@ export default async function ReviewQueue() {
                     <td><strong>{r.team.name}</strong><div className="ws-small ws-muted">{r.project.title}</div></td>
                     <td>M{r.milestone.order} · {r.milestone.name}</td>
                     <td>v{r.submission.version}</td>
-                    <td title={formatDateTime(r.submission.createdAt)}>{relativeDays(r.submission.createdAt)}</td>
+                    <td><div className="ws-row" style={{ gap: 7 }}><DateTile date={r.submission.createdAt} /><time className="ws-small" dateTime={r.submission.createdAt} title={formatDateTime(r.submission.createdAt)}>{relativeDays(r.submission.createdAt)}</time></div></td>
                     <td style={{ textAlign: "right" }}><Link className="ws-btn ws-btn-primary ws-btn-sm" href={`/supervisor/reviews/${r.project.id}/${r.milestone.order}`}>Review</Link></td>
                   </tr>
                 ))}

@@ -3,6 +3,7 @@ import { loadWorkspace } from "@/lib/workspace/data";
 import { currentMilestone, isOverdue, personById, supervisesTeam, teamProject } from "@/lib/workspace/selectors";
 import { formatDate } from "@/lib/workspace/rules";
 import { Badge, EmptyState, Forbidden, Meter, MilestoneBadge, PageHeader } from "@/components/workspace/ui";
+import { StateBreakdown } from "@/components/workspace/VisualSummary";
 
 export const metadata = { title: "Teams" };
 
@@ -17,6 +18,11 @@ export default async function SupervisedTeams() {
   return (
     <div className="ws-content">
       <PageHeader eyebrow="Supervisor" title="Teams" lead={viewer.role === "admin" ? "All teams on the platform." : `Teams assigned to you (cap ${data.settings.supervisorCap}).`} />
+      <StateBreakdown label="Assigned teams by status" parts={[
+        { label: "Pending group", value: teams.filter((team) => team.status === "pending_group").length, tone: "amber" },
+        { label: "Active", value: teams.filter((team) => team.status === "active").length, tone: "red" },
+        { label: "Completed", value: teams.filter((team) => team.status === "completed").length, tone: "green" },
+      ]} />
       {teams.length ? (
         <div className="ws-table-wrap">
           <table className="ws-table">
@@ -30,8 +36,8 @@ export default async function SupervisedTeams() {
                   <tr key={t.id}>
                     <td><Link href={"/supervisor/teams/" + t.id} className="ws-link" style={{ textDecoration: "none", fontWeight: 600 }}>{t.name}</Link><div className="ws-small ws-muted">{t.level} · formed {formatDate(t.formedAt)}</div></td>
                     <td>{personById(data, t.leaderId)?.name}</td>
-                    <td>{t.status === "active" ? <Badge tone="green">Active</Badge> : t.groupStatus === "submitted" ? <Badge tone="amber">Group to approve</Badge> : <Badge tone="amber">Pending group</Badge>}</td>
-                    <td>{m ? <div className="ws-row" style={{ gap: 6 }}><span className="ws-small">M{m.order} {m.name}</span><MilestoneBadge status={m.status} overdue={isOverdue(m)} /></div> : <span className="ws-faint">No project</span>}</td>
+                    <td>{t.status === "completed" ? <Badge tone="green">Completed</Badge> : t.status === "active" ? <Badge tone="green">Active</Badge> : t.groupStatus === "submitted" ? <Badge tone="amber">Group to approve</Badge> : <Badge tone="amber">Pending group</Badge>}</td>
+                    <td>{m ? <div className="ws-row" style={{ gap: 6 }}><span className="ws-small">M{m.order} {m.name}</span><MilestoneBadge status={m.status} overdue={isOverdue(m)} /></div> : <span className="ws-faint">{p?.status === "complete" ? "Project complete" : "No project"}</span>}</td>
                     <td><div style={{ display: "grid", gap: 4 }}><Meter value={approved} max={8} label={`${t.name} progress`} /><span className="ws-small ws-muted">{approved} of 8</span></div></td>
                   </tr>
                 );

@@ -2,6 +2,7 @@ import { loadWorkspace } from "@/lib/workspace/data";
 import { saveSettings } from "@/lib/workspace/actions";
 import { Forbidden, PageHeader } from "@/components/workspace/ui";
 import { ActionForm, Field, Submit } from "@/components/workspace/forms";
+import { Icon } from "@/components/workspace/Icon";
 
 export const metadata = { title: "Platform settings" };
 
@@ -26,9 +27,13 @@ export default async function AdminSettings() {
         </dl>
         <p className="ws-ops-note">This is the upper limit for a supervisor with full teams. Actual placement depends on team matching and available supervisors.</p>
       </section>
+      <nav className="ws-visual-tabs" aria-label="Platform settings sections">
+        <a href="#team-rules"><Icon name="users" />Team matching</a>
+        <a href="#reminder-rules"><Icon name="calendar" />Reports and deep dives</a>
+      </nav>
       <ActionForm action={saveSettings} className="" successArt="admin/settings-saved" errorArt="admin/failed">
         <div className="ws-card" style={{ padding: "0 21.5px" }}>
-          <section className="ws-form-section">
+          <section id="team-rules" className="ws-form-section ws-visual-jump">
             <div><h2 className="ws-h3">Teams</h2><p>How teams are formed and supervised.</p></div>
             <div className="ws-form">
               <div className="ws-form-row">
@@ -41,7 +46,7 @@ export default async function AdminSettings() {
               </div>
             </div>
           </section>
-          <section className="ws-form-section">
+          <section id="reminder-rules" className="ws-form-section ws-visual-jump">
             <div><h2 className="ws-h3">Reports and events</h2><p>Reminders and thresholds.</p></div>
             <div className="ws-form">
               <div className="ws-form-row">

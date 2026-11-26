@@ -8,7 +8,7 @@ import { Badge, Card, Feedback, Forbidden, MilestoneBadge, PageHeader } from "@/
 import { ActionForm, Choices, DialogButton, Field, FieldError, Select, Submit, TextArea } from "@/components/workspace/forms";
 import { PageCrumb } from "@/components/workspace/Shell";
 import { Icon } from "@/components/workspace/Icon";
-import { ReviewOutcome } from "@/components/workspace/learning/ReviewOutcome";
+import { ReviewChecklist, ReviewOutcome } from "@/components/workspace/learning/ReviewOutcome";
 
 // Session-bound page: allowed to block on navigation (see the dashboard layout).
 export const instant = false;
@@ -129,16 +129,11 @@ export default async function ReviewPage({ params }: { params: Promise<{ project
           <div className="ws-stack">
             {waiting ? (
                 <Card title="Your review">
-                  <ActionForm action={reviewSubmission} successArt="supervisor/decision">
+                  <ActionForm action={reviewSubmission} successArt="stories/review-filed">
                     <input type="hidden" name="projectId" value={project.id} />
                     <input type="hidden" name="order" value={milestone.order} />
-                    <fieldset className="ws-fieldset">
-                      <legend>Checklist</legend>
-                      <div style={{ display: "grid", gap: 8 }}>
-                        {milestone.checklist.map((c) => <label key={c} className="ws-check"><input type="checkbox" name="checklist" value={c} /><span>{c}</span></label>)}
-                      </div>
-                      <FieldError name="checklist" />
-                    </fieldset>
+                    <ReviewChecklist key={submission.id} checklist={milestone.checklist} />
+                    <FieldError name="checklist" />
                     <TextArea label="Comments for the team" name="comments" rows={5} maxLength={2000} placeholder="What works, what needs to change, and why." help="Connect each requested change to the relevant checklist item." />
                     <Choices legend="Decision" name="decision" options={[["approved", "Approve"], ["changes_requested", "Request changes"]]} />
                     <p className="ws-small ws-muted">The team sees your decision and comments on their milestone page.</p>

@@ -1,11 +1,13 @@
 import { loadWorkspace } from "@/lib/workspace/data";
-import { myTeam } from "@/lib/workspace/selectors";
+import { myTeam, profileComplete } from "@/lib/workspace/selectors";
 import { LEVELS } from "@/lib/workspace/rules";
 import { requestDataDeletion, saveProfile } from "@/lib/workspace/actions";
 import { Card, PageHeader, ReadinessBadge, Tip } from "@/components/workspace/ui";
 import { ActionButton, ActionForm, Check, Choices, Field, Select, Submit, TextArea } from "@/components/workspace/forms";
 import { PasswordForm, PreferenceSwitch } from "@/components/workspace/prefs";
 import { JsonDownload } from "@/components/workspace/bits";
+import { Icon } from "@/components/workspace/Icon";
+import { WorkflowRail } from "@/components/workspace/learning/WorkflowRail";
 
 export const metadata = { title: "Settings" };
 
@@ -17,16 +19,19 @@ function StaffSettings({ name, email, role, preview }: { name: string; email: st
   return (
     <div className="ws-content ws-content-narrow">
       <PageHeader title="Settings" lead="Your account and password." />
+      <nav className="ws-visual-tabs" aria-label="Account settings sections">
+        <a href="#account"><Icon name="user" /> Account details</a><a href="#security"><Icon name="lock" /> Password</a>
+      </nav>
       <div className="ws-stack">
-        <Card title="Account">
+        <div id="account" className="ws-visual-jump"><Card title="Account">
           <dl className="ws-kv">
             <dt>Name</dt><dd>{name}</dd>
             <dt>Email</dt><dd>{email}</dd>
             <dt>Role</dt><dd style={{ textTransform: "capitalize" }}>{role}</dd>
           </dl>
           <p className="ws-small ws-muted" style={{ marginTop: 12 }}>Roles are changed by an admin under Admin › Users.</p>
-        </Card>
-        <Card title="Password"><PasswordForm preview={preview} /></Card>
+        </Card></div>
+        <div id="security" className="ws-visual-jump"><Card title="Password"><PasswordForm preview={preview} /></Card></div>
       </div>
     </div>
   );
@@ -41,6 +46,8 @@ export default async function Settings() {
   const p = data.profile;
   const r = p.readiness;
   const placed = Boolean(myTeam(data, viewer));
+  const ready = profileComplete(data);
+  const quizDone = p.quiz.status === "completed";
   const otherSkills = p.skills.filter((s) => !SKILLS.includes(s)).join(", ");
   const exportData = { profile: { ...p }, hotTopicProgress: data.progress, reports: data.reports.filter((x) => x.userId === viewer.id), activity: data.activity, savedArticles: data.savedArticles, eventRegistrations: data.registrations, exportedAt: new Date().toISOString() };
 
@@ -48,8 +55,14 @@ export default async function Settings() {
     <div className="ws-content">
       <PageHeader title="Settings" lead="Your builder profile, readiness, preferences and account." />
 
-      <nav className="ws-tabs" aria-label="Settings sections">
-        <a href="#profile" aria-current="page">Profile</a><a href="#readiness">Readiness</a><a href="#preferences">Preferences</a><a href="#security">Security</a><a href="#privacy">Privacy</a>
+      {!placed && <div className="ws-visual-context"><WorkflowRail label="Builder setup progress" steps={[
+        { label: "Email verified", icon: "check", state: "complete" },
+        { label: "Profile and readiness", icon: "user", state: ready ? "complete" : "current" },
+        { label: "Skills quiz", icon: "quiz", state: quizDone ? "complete" : ready ? "current" : "upcoming" },
+        { label: "Team placement", icon: "users", detail: p.optedIn ? undefined : "Opted out", state: quizDone && p.optedIn ? "current" : "upcoming" },
+      ]} /></div>}
+      <nav className="ws-visual-tabs" aria-label="Settings sections">
+        <a href="#profile"><Icon name="user" />Profile</a><a href="#readiness"><Icon name="sliders" />Readiness</a><a href="#preferences"><Icon name="settings" />Preferences</a><a href="#security"><Icon name="lock" />Security</a><a href="#privacy"><Icon name="file" />Privacy</a>
       </nav>
 
       <ActionForm action={saveProfile} className="">

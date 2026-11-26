@@ -2,8 +2,10 @@ import { loadWorkspace } from "@/lib/workspace/data";
 import { formatDateTime, nowMs } from "@/lib/workspace/rules";
 import { attachRecording, markAttendance, saveEvent, setEventStatus } from "@/lib/workspace/actions";
 import type { HotTopic, LiveEvent } from "@/lib/workspace/types";
-import { Badge, Forbidden, PageHeader } from "@/components/workspace/ui";
+import { Badge, Forbidden, Meter, PageHeader } from "@/components/workspace/ui";
 import { ActionButton, ActionForm, Check, Choices, DialogButton, Field, Select, Submit, TextArea } from "@/components/workspace/forms";
+import { DateTile, StateBreakdown } from "@/components/workspace/VisualSummary";
+import { WorkflowRail } from "@/components/workspace/learning/WorkflowRail";
 
 export const metadata = { title: "Events" };
 
@@ -57,6 +59,17 @@ export default async function AdminEvents() {
       <PageHeader eyebrow="Admin" title="Events" lead="Live sessions on Google Meet or Zoom. Registered learners see publish, change and cancellation on Live events (email once the mail queue is connected)." actions={
         <DialogButton label="New event" variant="primary" title="New live event"><EventForm topics={data.topics} /></DialogButton>
       } />
+      <StateBreakdown label="Session status" parts={[
+        { label: "Draft", value: events.filter((event) => event.status === "draft").length, tone: "neutral" },
+        { label: "Published", value: events.filter((event) => event.status === "published").length, tone: "red" },
+        { label: "Completed", value: events.filter((event) => event.status === "completed").length, tone: "green" },
+        { label: "Cancelled", value: events.filter((event) => event.status === "cancelled").length, tone: "ink" },
+      ]} />
+      <div className="ws-visual-context"><WorkflowRail label="Managing a live session" steps={[
+        { label: "Draft the session", icon: "calendar" },
+        { label: "Publish for registration", icon: "users" },
+        { label: "Record attendance or cancel", icon: "clipboard" },
+      ]} /></div>
       <div className="ws-table-wrap">
         <table className="ws-table">
           <thead><tr><th>Event</th><th>When (Kigali)</th><th>Registered</th><th>Status</th><th></th></tr></thead>
@@ -64,8 +77,8 @@ export default async function AdminEvents() {
             {events.map((e) => (
               <tr key={e.id}>
                 <td><strong>{e.title}</strong><div className="ws-small ws-muted">{e.platform} · {e.host}</div></td>
-                <td>{formatDateTime(e.startsAt)}<div className="ws-small ws-muted">{e.durationMin} min</div></td>
-                <td className="num">{e.registered}{e.capacity ? ` / ${e.capacity}` : ""}{e.attendees && <div className="ws-small ws-muted">{e.attendees.length} attended</div>}</td>
+                <td><div className="ws-row" style={{ gap: 7 }}><DateTile date={e.startsAt} /><div>{formatDateTime(e.startsAt)}<div className="ws-small ws-muted">{e.durationMin} min</div></div></div></td>
+                <td><div className="ws-article-length"><span>{e.registered}{e.capacity ? ` / ${e.capacity}` : ""}</span>{e.capacity ? <Meter value={e.registered} max={e.capacity} label={`${e.title} registrations`} /> : null}{e.attendees && <span className="ws-small ws-muted">{e.attendees.length} attended</span>}</div></td>
                 <td><Badge tone={tone[e.status]}>{e.status[0].toUpperCase() + e.status.slice(1)}</Badge>{e.recordingUrl && <div className="ws-small"><a className="ws-link" href={e.recordingUrl} target="_blank" rel="noreferrer">Recording</a></div>}</td>
                 <td style={{ textAlign: "right" }}>
                   <div className="ws-actions" style={{ justifyContent: "flex-end" }}>

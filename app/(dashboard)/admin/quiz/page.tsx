@@ -1,9 +1,11 @@
 import { loadWorkspace } from "@/lib/workspace/data";
 import { LEVELS, QUIZ_MINUTES } from "@/lib/workspace/rules";
 import { saveQuizQuestion, setQuizQuestionActive } from "@/lib/workspace/actions";
-import { Badge, Forbidden, PageHeader, Stats } from "@/components/workspace/ui";
+import { Badge, Forbidden, PageHeader } from "@/components/workspace/ui";
 import { ActionButton, ActionForm, DialogButton, Field, Select, Submit } from "@/components/workspace/forms";
 import { FilterInput } from "@/components/workspace/bits";
+import { StateBreakdown } from "@/components/workspace/VisualSummary";
+import { WorkflowRail } from "@/components/workspace/learning/WorkflowRail";
 
 export const metadata = { title: "Quiz bank" };
 
@@ -32,7 +34,15 @@ export default async function AdminQuiz() {
           </ActionForm>
         </DialogButton>
       } />
-      <Stats items={LEVELS.map((l) => ({ label: `${l} questions`, value: bank.filter((q) => q.level === l && q.active).length }))} columns={3} />
+      <StateBreakdown label="Active questions by level" parts={LEVELS.map((level, index) => ({
+        label: level, value: bank.filter((question) => question.level === level && question.active).length,
+        tone: (["red", "ink", "neutral"] as const)[index],
+      }))} />
+      <div className="ws-visual-context"><WorkflowRail label="How the question bank feeds an assessment" steps={[
+        { label: "Learner chooses a level", icon: "user" },
+        { label: "Draw and shuffle questions", icon: "quiz" },
+        { label: "Score and assign a level", icon: "chart" },
+      ]} /></div>
       <div style={{ margin: "18px 0 11px", maxWidth: 360 }}><FilterInput target="quiz" placeholder="Filter questions" /></div>
       <div className="ws-table-wrap" data-filter="quiz">
         <table className="ws-table">

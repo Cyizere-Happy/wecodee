@@ -36,7 +36,6 @@ export function ShellSkeleton() {
             <img src={scenes.desk} alt="" />
           </span>
           <strong>Opening your workspace…</strong>
-          <span className="ws-small">Setting up your desk.</span>
         </div>
       </div>
     </div>

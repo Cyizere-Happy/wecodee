@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { loadWorkspace } from "@/lib/workspace/data";
-import { isLeader, memberViews, myTeam, personById, teamProject } from "@/lib/workspace/selectors";
+import { currentMilestone, isLeader, memberViews, myTeam, personById, teamProject } from "@/lib/workspace/selectors";
 import { formatDate } from "@/lib/workspace/rules";
 import { acceptLeadership, flagInactive, leaveTeam, setMemberLeave, submitGroupLink } from "@/lib/workspace/actions";
 import { Badge, Card, EmptyState, Feedback, Initials, Mascot, PageHeader, QuietLink, ReadinessBadge } from "@/components/workspace/ui";
@@ -9,6 +9,8 @@ import { RoleEditor } from "@/components/workspace/team";
 import { MilestonePath } from "@/components/workspace/MilestonePath";
 import { Icon } from "@/components/workspace/Icon";
 import { VisualSequence } from "@/components/workspace/Guidance";
+import { WorkshopArt } from "@/components/workspace/learning/EditorialVisuals";
+import { WorkflowRail } from "@/components/workspace/learning/WorkflowRail";
 
 export const metadata = { title: "Team" };
 
@@ -58,6 +60,9 @@ export default async function TeamPage() {
   const members = memberViews(data, team, viewer);
   const supervisor = personById(data, team.supervisorId);
   const project = teamProject(data, team.id);
+  const milestone = project ? currentMilestone(project.milestones) : null;
+  const latest = milestone?.submissions.at(-1);
+  const contributions = new Set((milestone?.status === "submitted" ? latest?.contributions : milestone?.pendingContributions)?.map((item) => item.userId));
   const leaderName = team.leaderId === viewer.id ? "You" : personById(data, team.leaderId)?.name;
   const statusBadge = team.status === "active" ? <Badge tone="green">Active</Badge> : team.status === "pending_group" ? <Badge tone="amber">Pending group</Badge> : <Badge>{team.status}</Badge>;
 
@@ -107,6 +112,36 @@ export default async function TeamPage() {
             </div>
           )}
         </Card>
+      )}
+
+      {project ? (
+        <section className="ws-team-assembly" aria-labelledby="team-assembly-title">
+          <WorkshopArt scene="team" />
+          <div>
+            <h2 id="team-assembly-title" className="ws-h2">How your team’s work comes together</h2>
+            <div className="ws-team-assembly-flow">
+              <ol aria-label="Team roles and current contributions">
+                {members.map((member) => <li key={member.id}>
+                  <div><strong>{member.id === viewer.id ? "You" : member.name}</strong><br /><span>{member.roles.join(" · ") || "Role pending"}</span></div>
+                  {contributions.has(member.id) && <span className="ws-row"><Icon name="check" size={12} />Confirmed</span>}
+                </li>)}
+              </ol>
+              <Icon name="arrowRight" size={19} />
+              <div className="ws-team-output">
+                <strong>{project.title}</strong>
+                {milestone ? <><Link className="ws-link" href={"/learner/project/" + milestone.order}>{milestone.name}</Link><span>{milestone.deliverable}</span></> : <span>Project complete</span>}
+              </div>
+            </div>
+          </div>
+        </section>
+      ) : (
+        <div className="ws-visual-context">
+          <WorkflowRail label="Team setup progress" steps={[
+            { label: "Accept leadership", icon: "user", state: team.leaderAccepted ? "complete" : "current" },
+            { label: "Approve WhatsApp group", icon: "whatsapp", state: team.groupStatus === "approved" ? "complete" : team.leaderAccepted ? "current" : "upcoming" },
+            { label: "Start the project", icon: "flag", state: team.status === "active" ? "current" : "upcoming" },
+          ]} />
+        </div>
       )}
 
       <section className="ws-section" style={{ marginTop: 20 }}>

@@ -4,6 +4,8 @@ import Link from "next/link";
 import "@fontsource-variable/geist";
 import "@fontsource-variable/geist-mono";
 import "@/components/workspace/workspace.css";
+import "@/components/workspace/visuals.css";
+import "@/components/workspace/learning/lessons.css";
 import { publicSource } from "@/lib/workspace/public";
 
 /** Public WeCodee pages that need no sign-in: certificate checks and portfolios. */

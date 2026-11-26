@@ -65,8 +65,7 @@ export function LearningWithAI() {
             </Headline>
             <div data-ai-copy className="mt-5">
               <p className="section-copy">
-                Use these prompts with your AI assistant when you need a hint,
-                an explanation, or feedback on a design.
+                Pick a situation to see how a prompt can lead to your next step. Copy it into an AI assistant you already use.
               </p>
             </div>
           </div>

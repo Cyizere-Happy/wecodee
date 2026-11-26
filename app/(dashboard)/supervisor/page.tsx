@@ -7,6 +7,7 @@ import { Badge, Card, EmptyState, Forbidden, PageHeader, QuietLink, Stats } from
 import { ActionButton, ActionForm, Choices, DialogButton, Submit, TextArea } from "@/components/workspace/forms";
 import { Icon } from "@/components/workspace/Icon";
 import { WorkflowRail } from "@/components/workspace/learning/WorkflowRail";
+import { StateBreakdown } from "@/components/workspace/VisualSummary";
 
 export const metadata = { title: "Supervisor" };
 
@@ -36,6 +37,13 @@ export default async function SuperviseOverview() {
         { label: "Awaiting review", value: queue.length, icon: "inbox" },
         { label: "Overdue milestones", value: overdue.length, icon: "alert" },
         { label: "Open blockers", value: blockers.length, icon: "flag" },
+      ]} />
+      <StateBreakdown label="Open work across assigned teams" parts={[
+        { label: "Reviews", value: queue.length, tone: "red", href: "/supervisor/reviews" },
+        { label: "Group approvals", value: groups.length, tone: "amber", href: "#group-approvals" },
+        { label: "Overdue milestones", value: overdue.length, tone: "ink", href: "#overdue-milestones" },
+        { label: "Blockers", value: blockers.length, tone: "neutral", href: "#open-blockers" },
+        { label: "Inactive flags", value: flags.length },
       ]} />
       <section className="ws-priority" aria-labelledby="supervisor-priority">
         <h2 id="supervisor-priority">Where your teams need you</h2>
@@ -84,7 +92,7 @@ export default async function SuperviseOverview() {
             ) : <p className="ws-card-body ws-small ws-muted">No groups waiting.</p>}
           </Card></div>
 
-          <Card title="Overdue milestones" pad={false}>
+          <div id="overdue-milestones" className="ws-visual-jump"><Card title="Overdue milestones" pad={false}>
             {overdue.length ? (
               <ul className="ws-list">
                 {overdue.map(({ team, milestone }) => (
@@ -96,7 +104,7 @@ export default async function SuperviseOverview() {
                 ))}
               </ul>
             ) : <p className="ws-card-body ws-small ws-muted">Nothing overdue.</p>}
-          </Card>
+          </Card></div>
         </div>
 
         <div className="ws-stack">
@@ -113,7 +121,7 @@ export default async function SuperviseOverview() {
               </ul>
             </Card>
           )}
-          <Card title="Open blockers" action={<Badge plain>{blockers.length}</Badge>} pad={false}>
+          <div id="open-blockers" className="ws-visual-jump"><Card title="Open blockers" action={<Badge plain>{blockers.length}</Badge>} pad={false}>
             {blockers.length ? (
               <ul className="ws-list">
                 {blockers.map((b) => (
@@ -127,7 +135,7 @@ export default async function SuperviseOverview() {
                 ))}
               </ul>
             ) : <EmptyState compact still="medal" title="No open blockers" />}
-          </Card>
+          </Card></div>
           <Card title="Your teams" action={<QuietLink href="/supervisor/teams">All teams</QuietLink>} pad={false}>
             <ul className="ws-list">
               {teams.map((t) => {

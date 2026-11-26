@@ -1,10 +1,12 @@
 import Image from "next/image";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { loadWorkspace } from "@/lib/workspace/data";
 import { formatDate } from "@/lib/workspace/rules";
 import { Badge, Feedback, PageHeader } from "@/components/workspace/ui";
 import { PrintButton } from "@/components/workspace/certificate";
 import { PageCrumb } from "@/components/workspace/Shell";
+import { WorkflowRail } from "@/components/workspace/learning/WorkflowRail";
 
 /** FR-50/52: a printable certificate. "Download PDF" uses the browser's Save as PDF. */
 // Session-bound page: allowed to block on navigation (see the dashboard layout).
@@ -20,6 +22,13 @@ export default async function CertificatePage({ params }: { params: Promise<{ co
     <div className="ws-content ws-content-narrow">
       <PageCrumb label={cert.code} />
       <PageHeader title="Certificate" actions={cert.revokedAt ? <Badge tone="red">Revoked</Badge> : <PrintButton />} />
+      <div className="ws-visual-context">
+        <WorkflowRail label="Certificate lifecycle" steps={[
+          { label: "Project completed", icon: "flag", detail: formatDate(cert.completedAt), state: "complete" },
+          { label: cert.revokedAt ? "Revoked" : "Certificate issued", icon: cert.revokedAt ? "alert" : "award", detail: cert.revokedAt ? formatDate(cert.revokedAt) : cert.code, state: cert.revokedAt ? "current" : "complete" },
+          { label: "Public verification", icon: "search", detail: <Link className="ws-link" href={"/verify/" + cert.code}>Open verification</Link> },
+        ]} />
+      </div>
       {cert.revokedAt && <div style={{ marginBottom: 16 }}><Feedback tone="error">Revoked on {formatDate(cert.revokedAt)}: {cert.revokeReason}</Feedback></div>}
       <article className="ws-cert ws-print" style={{ padding: "43px 39.5px", textAlign: "center", display: "grid", gap: 14, justifyItems: "center" }}>
         <Image src="/brand/sheep-mark.png" alt="" width={50} height={50} />

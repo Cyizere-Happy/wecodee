@@ -9,6 +9,8 @@ import { ActionForm, Choices, Submit, TextArea } from "@/components/workspace/fo
 import { PageCrumb } from "@/components/workspace/Shell";
 import { Icon } from "@/components/workspace/Icon";
 import { WorkflowRail } from "@/components/workspace/learning/WorkflowRail";
+import { TopicExperiment } from "@/components/workspace/learning/EditorialVisuals";
+import { ChecklistProgress } from "@/components/workspace/VisualSummary";
 
 // Session-bound page: allowed to block on navigation (see the dashboard layout).
 export const instant = false;
@@ -32,6 +34,8 @@ export default async function HotTopic({ params }: { params: Promise<{ id: strin
         lead={topic.summary}
         actions={<CompleteToggle topicId={id} done={Boolean(p.completedAt)} />}
       />
+
+      <TopicExperiment id={id} />
 
       <div className="ws-priority">
         <WorkflowRail label="Work through this Hot Topic" steps={[
@@ -62,17 +66,13 @@ export default async function HotTopic({ params }: { params: Promise<{ id: strin
 
         <div className="ws-stack">
           <Card title="Your progress">
-            <ul style={{ display: "grid", gap: 10 }}>
-              {[
-                ["Opened", p.viewedAt], ["Prompt copied", p.promptCopiedAt], ["Marked as done", p.completedAt],
-              ].map(([label, at]) => (
-                <li key={label} className="ws-row-between">
-                  <span className="ws-row" style={{ gap: 8 }}><Icon name={at ? "check" : "clock"} size={13.5} className={at ? "" : "ws-faint"} />{label}</span>
-                  <span className="ws-small ws-muted">{at ? formatDate(at) : "Not yet"}</span>
-                </li>
-              ))}
-              <li className="ws-row-between"><span className="ws-row" style={{ gap: 8 }}><Icon name="quiz" size={13.5} className="ws-faint" />Check score</span><span className="ws-small ws-muted">{p.bestScore !== undefined ? `first ${p.firstScore}% · best ${p.bestScore}%` : "Not attempted"}</span></li>
-            </ul>
+            <ChecklistProgress label="Lesson activity" items={[
+              { label: "Opened", complete: Boolean(p.viewedAt), detail: p.viewedAt ? formatDate(p.viewedAt) : undefined },
+              { label: "Prompt copied", complete: Boolean(p.promptCopiedAt), detail: p.promptCopiedAt ? formatDate(p.promptCopiedAt) : undefined },
+              { label: "Questions attempted", complete: p.attempts > 0 },
+              { label: "Marked as done", complete: Boolean(p.completedAt), detail: p.completedAt ? formatDate(p.completedAt) : undefined },
+            ]} showLabels />
+            <p className="ws-small ws-muted">{p.bestScore !== undefined ? `Check score · first ${p.firstScore}% · best ${p.bestScore}%` : "Check questions not attempted yet"}</p>
           </Card>
 
           <Card title="Request a deep dive">

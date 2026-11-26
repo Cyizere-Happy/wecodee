@@ -6,14 +6,17 @@ const prompts = [
   {
     situation: "Decode an error",
     text: "I got this error: [paste error]. Don't fix it. Explain it simply and give me one hint.",
+    reply: "The value is text when this step expects a number. What does its type look like just before you add it?",
   },
   {
     situation: "Learn a concept",
     text: "Explain [concept] with one everyday analogy, then quiz me with one question.",
+    reply: "Think of a queue at a shop. The first person in line is served first. Who is served next after the first person leaves?",
   },
   {
     situation: "Check a design",
     text: "Here's my design for [project]. What's most likely to break first, and why?",
+    reply: "Two people could try to book the same time slot. What should the app do when both requests arrive together?",
   },
 ];
 
@@ -106,9 +109,16 @@ export function PromptDeck() {
         aria-labelledby={`${baseId}-tab-${active}`}
         className="grid bg-sand p-5 sm:p-7 md:p-8"
       >
-        <p className="min-h-[4.35em] max-w-[43ch] text-[clamp(1.0625rem,1.8vw,1.25rem)] leading-[1.45]">
-          <PromptText text={prompts[active].text} />
-        </p>
+        <div className="grid gap-4">
+          <div>
+            <span className="mb-1 block text-xs font-semibold text-muted">Your prompt</span>
+            <p className="max-w-[50ch] text-base leading-[1.45]"><PromptText text={prompts[active].text} /></p>
+          </div>
+          <div className="border-l-2 border-signal pl-3">
+            <span className="mb-1 block text-xs font-semibold text-muted">Example assistant reply</span>
+            <p className="max-w-[56ch] text-sm leading-relaxed">{prompts[active].reply}</p>
+          </div>
+        </div>
         <button
           type="button"
           onClick={copy}

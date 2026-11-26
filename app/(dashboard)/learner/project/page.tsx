@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { loadWorkspace } from "@/lib/workspace/data";
-import { isLeader, isOverdue, myTeam, teamProject } from "@/lib/workspace/selectors";
+import { currentMilestone, isLeader, isOverdue, myTeam, teamProject } from "@/lib/workspace/selectors";
 import { formatDate, relativeDays } from "@/lib/workspace/rules";
 import { createProject } from "@/lib/workspace/actions";
 import { Card, EmptyState, MilestoneBadge, PageHeader } from "@/components/workspace/ui";
@@ -49,10 +49,8 @@ export default async function ProjectPage() {
             <EmptyState scene="pathStart" title={team ? "Your project starts soon" : "Projects start with a team"} actions={!team ? <Link href="/learner/team" className="ws-btn ws-btn-secondary">About teams</Link> : null}>
               {team ? (team.status === "active" ? "Your leader will create the project and open milestone 1." : "Once your WhatsApp group is approved, your leader creates the project.") : "When you’re placed in a team, you’ll build a real project together through eight milestones."}
             </EmptyState>
-            <div className="ws-card-body" style={{ borderTop: "1px solid var(--ws-border)" }}>
-              <ol className="ws-small" style={{ display: "grid", gap: 6, columns: 2 }}>
-                {data.templates.map((m) => <li key={m.order}><strong>{m.order}.</strong> {m.name} <span className="ws-muted">· {m.deliverable}</span></li>)}
-              </ol>
+            <div className="ws-card-body ws-template-path">
+              <WorkflowRail label="The project path" steps={data.templates.map((m) => ({ label: m.name, detail: m.deliverable, icon: "flag" }))} />
             </div>
           </div>
         )}
@@ -61,6 +59,7 @@ export default async function ProjectPage() {
   }
 
   const approved = project.milestones.filter((m) => m.status === "approved").length;
+  const active = currentMilestone(project.milestones);
   return (
     <div className="ws-content">
       <PageHeader
@@ -70,7 +69,13 @@ export default async function ProjectPage() {
         actions={<span className="ws-small ws-muted">Planned end {formatDate(project.plannedEnd)}</span>}
       />
       <div className="ws-stack">
-        <Card><div style={{ padding: "7px 0" }}><MilestonePath milestones={project.milestones} /></div></Card>
+        <section className="ws-project-path" aria-label="Project progress">
+          {active && <div className="ws-row-between ws-wrap">
+            <div><h2 className="ws-h2">{active.name}</h2><p className="ws-small ws-muted">{active.deliverable}</p></div>
+            <Link href={`/learner/project/${active.order}${active.status === "changes_requested" ? "#milestone-feedback" : ""}`} className="ws-btn ws-btn-primary ws-btn-sm">{active.status === "changes_requested" ? "Read feedback" : "Open current milestone"}</Link>
+          </div>}
+          <MilestonePath milestones={project.milestones} />
+        </section>
         <div className="ws-grid-2">
           <div className="ws-table-wrap">
             <table className="ws-table">

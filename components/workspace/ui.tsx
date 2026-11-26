@@ -45,13 +45,13 @@ export function Mascot({ art, still, scene, alt, className = "", style }: { art?
   );
 }
 
-export function EmptyState({ art, still, scene, title, children, actions, compact }: {
-  art?: ArtName; still?: StillName; scene?: SceneName; title: string; children?: ReactNode; actions?: ReactNode; compact?: boolean;
+export function EmptyState({ art, still, scene, title, children, actions, compact, heading: Heading = "h3" }: {
+  art?: ArtName; still?: StillName; scene?: SceneName; title: string; children?: ReactNode; actions?: ReactNode; compact?: boolean; heading?: "h1" | "h3";
 }) {
   return (
     <div className={"ws-empty" + (compact ? " ws-empty-compact" : "")}>
       <Mascot art={art} still={still} scene={scene} />
-      <h3>{title}</h3>
+      <Heading>{title}</Heading>
       {children && <p>{children}</p>}
       {actions && <div className="ws-actions">{actions}</div>}
     </div>
@@ -123,8 +123,8 @@ export function Forbidden({ needs }: { needs: string }) {
   return (
     <div className="ws-content ws-content-narrow">
       <div className="ws-card">
-        <EmptyState still="barrier" title="Not this door, builder." actions={<Link href="/workspace" className="ws-btn ws-btn-primary">Back to your workspace</Link>}>
-          This area is for {needs}. If you think you should have access, ask a WeCodee admin.
+        <EmptyState still="barrier" heading="h1" title="Access restricted" actions={<Link href="/workspace" className="ws-btn ws-btn-primary">Back to your workspace</Link>}>
+          This area is for {needs}. Ask an admin if you need access.
         </EmptyState>
       </div>
     </div>

@@ -6,6 +6,7 @@ import { ActionButton, ActionForm, DialogButton, Field, Select, Submit } from "@
 import { CsvButton, FilterInput } from "@/components/workspace/bits";
 import { RoleSelect } from "@/components/workspace/admin";
 import { WorkflowRail } from "@/components/workspace/learning/WorkflowRail";
+import { StateBreakdown } from "@/components/workspace/VisualSummary";
 
 export const metadata = { title: "Users" };
 
@@ -40,6 +41,11 @@ export default async function AdminUsers() {
           </ActionForm>
         </DialogButton>
       </>} />
+      <StateBreakdown label="Accounts by role" parts={[
+        { label: "Learners", value: people.filter((person) => person.role === "learner").length, tone: "red" },
+        { label: "Supervisors", value: people.filter((person) => person.role === "supervisor").length, tone: "ink" },
+        { label: "Admins", value: people.filter((person) => person.role === "admin").length, tone: "neutral" },
+      ]} />
       <details className="ws-role-guide">
         <summary>What each role can access</summary>
         <dl>

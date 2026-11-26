@@ -2,10 +2,12 @@ import Link from "next/link";
 import { loadWorkspace } from "@/lib/workspace/data";
 import { formatDate, formatDateTime, nowMs, relativeDays } from "@/lib/workspace/rules";
 import { toggleRegistration } from "@/lib/workspace/actions";
-import { Badge, Card, EmptyState, PageHeader } from "@/components/workspace/ui";
+import { Badge, Card, EmptyState, Meter, PageHeader } from "@/components/workspace/ui";
 import { ActionButton } from "@/components/workspace/forms";
 import { CalendarButton } from "@/components/workspace/bits";
 import { Icon } from "@/components/workspace/Icon";
+import { DateTile } from "@/components/workspace/VisualSummary";
+import { WorkshopArt } from "@/components/workspace/learning/EditorialVisuals";
 
 export const metadata = { title: "Live events" };
 
@@ -19,10 +21,11 @@ export default async function Events() {
   const upcoming = published.filter((e) => e.status !== "completed" && new Date(e.startsAt).getTime() > now).sort((a, b) => a.startsAt.localeCompare(b.startsAt));
   const past = published.filter((e) => e.status === "completed" || new Date(e.startsAt).getTime() <= now).sort((a, b) => b.startsAt.localeCompare(a.startsAt));
   const topicTitle = (id: string | null) => data.topics.find((t) => t.id === id)?.title;
+  const featuredEvent = upcoming.find((event) => event.status === "published")?.id;
 
   return (
     <div className="ws-content">
-      <PageHeader eyebrow="Learn" title="Live events" lead="Deep dives and office hours on Google Meet or Zoom. Times are in Kigali (UTC+2)." />
+      <PageHeader eyebrow="Learn" title="Live events" lead="Kigali time (UTC+2)" />
 
       <section className="ws-section">
         <div className="ws-section-head"><h2 className="ws-h2">Upcoming</h2></div>
@@ -32,13 +35,11 @@ export default async function Events() {
               const going = data.registrations.includes(e.id);
               const full = e.capacity !== null && e.registered >= e.capacity && !going;
               const cancelled = e.status === "cancelled";
+              const featured = e.id === featuredEvent;
               return (
                 <article key={e.id} className="ws-card">
-                  <div className="ws-card-body" style={{ display: "grid", gridTemplateColumns: "65px minmax(0,1fr)", gap: 18 }}>
-                    <div style={{ textAlign: "center", border: "1px solid var(--ws-border)", borderRadius: 10, paddingBlock: 8, alignSelf: "start" }}>
-                      <p className="ws-small" style={{ color: "var(--ws-red)", fontWeight: 650, textTransform: "uppercase" }}>{formatDate(e.startsAt, { month: "short" })}</p>
-                      <p style={{ fontSize: "1.35rem", fontWeight: 650, letterSpacing: "-.04em", lineHeight: 1.1 }}>{formatDate(e.startsAt, { day: "numeric" })}</p>
-                    </div>
+                  <div className="ws-card-body ws-event-body" data-featured={featured}>
+                    <DateTile date={e.startsAt} />
                     <div style={{ display: "grid", gap: 6, minWidth: 0 }}>
                       <div className="ws-row ws-wrap" style={{ gap: 8 }}>
                         <h3 className="ws-h2" style={{ fontSize: ".8438rem" }}>{e.title}</h3>
@@ -50,9 +51,13 @@ export default async function Events() {
                         <span>{e.platform}</span>
                         <span>Host: {e.host}</span>
                         {topicTitle(e.topicId) && <Link className="ws-link" href={"/learner/hot-topics/" + e.topicId}>{topicTitle(e.topicId)}</Link>}
+                      </div>
+                      <div className="ws-event-capacity">
                         <span>{e.registered}{e.capacity ? ` / ${e.capacity}` : ""} registered</span>
+                        {e.capacity ? <Meter value={e.registered} max={e.capacity} label={`${e.title} registration capacity`} /> : null}
                       </div>
                     </div>
+                    {featured && <WorkshopArt scene="event" />}
                   </div>
                   {!cancelled && (
                     <div className="ws-card-foot">
@@ -87,7 +92,7 @@ export default async function Events() {
             <ul className="ws-list">
               {past.map((e) => (
                 <li key={e.id}>
-                  <Icon name="calendar" size={14.5} className="ws-faint" />
+                  <DateTile date={e.startsAt} />
                   <div className="ws-list-main"><p>{e.title}</p><p>{formatDate(e.startsAt)} · {e.host}{data.attended.includes(e.id) ? " · You attended" : ""}</p></div>
                   {e.recordingUrl ? <a className="ws-btn ws-btn-secondary ws-btn-sm" href={e.recordingUrl} target="_blank" rel="noreferrer"><Icon name="play" size={12.5} />Recording</a> : <span className="ws-small ws-faint">No recording</span>}
                 </li>

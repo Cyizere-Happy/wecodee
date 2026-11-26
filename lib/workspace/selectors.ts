@@ -77,6 +77,14 @@ export function workingDays(count = 14, now = Date.now()) {
 
 export type ReportCell = "reported" | "missed" | "leave" | "today";
 
+export function dailyReportHours(reports: readonly DailyReport[], days: readonly string[]) {
+  const totals = new Map<string, number>();
+  for (const { date, hours } of reports) {
+    totals.set(date, (totals.get(date) ?? 0) + Math.min(12, hours));
+  }
+  return days.map((date) => ({ date, hours: totals.get(date) ?? 0 }));
+}
+
 export function reportGrid(team: Team, reports: DailyReport[], days: string[]) {
   const today = kigaliDay();
   return team.members.map((m) => ({

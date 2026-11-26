@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { loadWorkspace } from "@/lib/workspace/data";
-import { formatDate } from "@/lib/workspace/rules";
+import { CERTIFICATE_MIN_MILESTONES, formatDate } from "@/lib/workspace/rules";
 import { revokeCertificate } from "@/lib/workspace/actions";
 import { Badge, EmptyState, Forbidden, PageHeader } from "@/components/workspace/ui";
 import { ActionForm, DialogButton, Submit, TextArea } from "@/components/workspace/forms";
 import { CsvButton, FilterInput } from "@/components/workspace/bits";
+import { StateBreakdown } from "@/components/workspace/VisualSummary";
+import { WorkflowRail } from "@/components/workspace/learning/WorkflowRail";
 
 export const metadata = { title: "Certificates" };
 
@@ -20,7 +22,16 @@ export default async function AdminCertificates() {
 
   return (
     <div className="ws-content">
-      <PageHeader eyebrow="Admin" title="Certificates" lead="Issued automatically when a project completes, to members who confirmed contributions on at least 6 of 8 milestones." actions={<CsvButton name="wecodee-certificates.csv" rows={rows} />} />
+      <PageHeader eyebrow="Admin" title="Certificates" lead="Find a credential or review its status." actions={<CsvButton name="wecodee-certificates.csv" rows={rows} />} />
+      <StateBreakdown label="Issued certificates" parts={[
+        { label: "Valid", value: certs.filter((certificate) => !certificate.revokedAt).length, tone: "green" },
+        { label: "Revoked", value: certs.filter((certificate) => certificate.revokedAt).length, tone: "red" },
+      ]} />
+      <div className="ws-visual-context"><WorkflowRail label="Certificate issuance" steps={[
+        { label: "Project completed", icon: "flag" },
+        { label: "Contributions checked", icon: "clipboard", detail: `At least ${CERTIFICATE_MIN_MILESTONES} of 8 milestones per learner` },
+        { label: "Certificate issued", icon: "award" },
+      ]} /></div>
       {certs.length ? (
         <>
           <div style={{ marginBottom: 12, maxWidth: 360 }}><FilterInput target="certs" placeholder="Filter by code, learner or project" /></div>

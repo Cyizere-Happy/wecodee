@@ -13,7 +13,7 @@ export function VerifyLayout({ code = "", result = null }: { code?: string; resu
             <span className="ws-eyebrow">Certificate check</span>
             <h1 className="ws-title">Is this WeCodee certificate genuine?</h1>
             <p className="ws-muted">Enter the code printed on the certificate, or scan its QR code. You’ll see the learner, project, role and completion date.</p>
-            <VerifyCertificate initial={code} initialResult={result} verify={verifyPublicCertificate} />
+            <VerifyCertificate initial={code} initialResult={result} verify={verifyPublicCertificate} showSteps />
           </div>
           <Mascot still="badge" className="ws-public-art" />
         </div>

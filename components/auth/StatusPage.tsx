@@ -5,14 +5,14 @@ import { AuthIllustration } from "./AuthIllustration";
 import { AuthLink } from "./AuthLink";
 
 const states = {
-  "400": ["Something doesn’t quite fit.", "Check your request and give it another try.", "Try again", "/"],
-  "401": ["A little key is missing.", "Sign in to continue.", "Sign in", "/login"],
-  "403": ["Not this door, builder.", "You don’t have permission to access this space.", "Back to your workspace", "/workspace"],
-  "404": ["Well, this wasn’t on the map.", "The page you’re looking for may have moved or no longer exists.", "Back to home", "/"],
-  "429": ["One thing at a time.", "Give us a moment before trying again.", "Try again", "/login"],
-  "500": ["Even builders break things.", "Something went wrong on our side. Please try again.", "Try again", "/"],
-  "503": ["A little maintenance break.", "WeCodee is temporarily unavailable. Please check back shortly.", "Try again", "/"],
-  offline: ["Lost our connection.", "Reconnect to the internet to continue your journey.", "Try again", "/"],
+  "400": ["Check your request.", "Review the information you entered and try again.", "Try again", "/"],
+  "401": ["Sign in to continue.", "This page needs an active WeCodee session.", "Sign in", "/login"],
+  "403": ["This page needs another role.", "Return to the workspace for your account.", "Back to your workspace", "/workspace"],
+  "404": ["Page not found.", "The page may have moved or been removed.", "Back to home", "/"],
+  "429": ["Too many attempts.", "Wait a moment before trying again.", "Try again", "/login"],
+  "500": ["We couldn’t load this page.", "Try again in a moment.", "Try again", "/"],
+  "503": ["WeCodee is temporarily unavailable.", "Try again in a moment.", "Try again", "/"],
+  offline: ["You’re offline.", "Reconnect to the internet and try again.", "Try again", "/"],
 } as const;
 
 export type StatusCode = keyof typeof states;

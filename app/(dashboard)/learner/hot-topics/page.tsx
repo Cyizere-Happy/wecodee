@@ -4,6 +4,8 @@ import { LEVELS } from "@/lib/workspace/rules";
 import { Badge, EmptyState, PageHeader } from "@/components/workspace/ui";
 import { AutoFilter } from "@/components/workspace/topic";
 import { Icon } from "@/components/workspace/Icon";
+import { TopicTrail } from "@/components/workspace/learning/EditorialVisuals";
+import { StateBreakdown } from "@/components/workspace/VisualSummary";
 
 export const metadata = { title: "Hot Topics" };
 
@@ -26,17 +28,24 @@ export default async function HotTopics({ searchParams }: { searchParams: Promis
       && (!status || state === status);
   });
   const done = topics.filter((t) => data.progress[t.id]?.completedAt).length;
+  const started = topics.filter((t) => data.progress[t.id]?.viewedAt && !data.progress[t.id]?.completedAt).length;
+  const statusLink = (value: string) => {
+    const filter = new URLSearchParams(Object.entries({ q, category, level, phase, status: value }).filter(([, v]) => v));
+    return "/learner/hot-topics?" + filter.toString();
+  };
 
   return (
     <div className="ws-content">
       <PageHeader
         eyebrow="Learn"
         title="Hot Topics"
-        lead="Short lessons, coaching prompts, and check questions you can use on your project."
-        actions={<span className="ws-badge" data-plain>{done} of {topics.length} completed</span>}
       />
 
-
+      <StateBreakdown label="Progress across all Hot Topics" parts={[
+        { label: "Completed", value: done, tone: "green", href: statusLink("done"), current: status === "done" },
+        { label: "In progress", value: started, tone: "red", href: statusLink("progress"), current: status === "progress" },
+        { label: "Not started", value: topics.length - done - started, href: statusLink("new"), current: status === "new" },
+      ]} />
       <AutoFilter>
         <label className="ws-search">
           <Icon name="search" size={13.5} />
@@ -63,18 +72,18 @@ export default async function HotTopics({ searchParams }: { searchParams: Promis
       </AutoFilter>
 
       {shown.length ? (
-        <div className="ws-grid">
+        <div className="ws-topic-library">
           {shown.map((t) => {
             const p = data.progress[t.id];
             const milestone = data.templates.find((m) => m.order === t.phase);
             return (
-              <Link key={t.id} href={"/learner/hot-topics/" + t.id} className="ws-card ws-card-pad" style={{ display: "grid", gap: 10, alignContent: "start" }}>
+              <Link key={t.id} href={"/learner/hot-topics/" + t.id} className="ws-topic-entry">
+                <TopicTrail id={t.id} fallback={t.summary} />
                 <div className="ws-row-between">
                   <span className="ws-small ws-muted">{t.category}</span>
                   {p?.completedAt ? <Badge tone="green">Done</Badge> : p?.viewedAt ? <Badge tone="blue">In progress</Badge> : <Badge plain>{t.level}</Badge>}
                 </div>
-                <h2 className="ws-h2" style={{ fontSize: ".8438rem" }}>{t.title}</h2>
-                <p className="ws-small ws-muted" style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{t.summary}</p>
+                <h2 className="ws-h2">{t.title}</h2>
                 <div className="ws-row ws-small ws-faint" style={{ gap: 14 }}>
                   <span className="ws-row" style={{ gap: 4 }}><Icon name="clock" size={11.5} />{Math.ceil(t.durationSec / 60)} min</span>
                   {milestone && <span className="ws-row" style={{ gap: 4 }}><Icon name="flag" size={11.5} />Milestone {milestone.order}</span>}

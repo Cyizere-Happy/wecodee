@@ -4,6 +4,7 @@ import { myTeam, personById, teamProject } from "@/lib/workspace/selectors";
 import { CERTIFICATE_MIN_MILESTONES, formatDate } from "@/lib/workspace/rules";
 import { Badge, Card, EmptyState, Meter, PageHeader } from "@/components/workspace/ui";
 import { VerifyCertificate } from "@/components/workspace/certificate";
+import { ChecklistProgress } from "@/components/workspace/VisualSummary";
 
 export const metadata = { title: "Certificates" };
 
@@ -15,12 +16,13 @@ export default async function Certificates() {
   const mine = data.certificates.filter((c) => c.userId === viewer.id);
   const team = myTeam(data, viewer);
   const project = team ? teamProject(data, team.id) : null;
-  const contributed = project?.milestones.filter((m) => m.submissions.some((s) => s.contributions.some((c) => c.userId === viewer.id))).length ?? 0;
+  const contributions = project?.milestones.map((m) => ({ label: m.name, complete: m.submissions.some((s) => s.contributions.some((c) => c.userId === viewer.id)) })) ?? [];
+  const contributed = contributions.filter((item) => item.complete).length;
   const approved = project?.milestones.filter((m) => m.status === "approved").length ?? 0;
 
   return (
     <div className="ws-content">
-      <PageHeader eyebrow="Showcase" title="Certificates" lead="Free and verifiable. Each one shows your name, project, role, completion date, supervisor and a unique code." />
+      <PageHeader eyebrow="Showcase" title="Certificates" lead="View your awards or verify a certificate code." />
       <div className="ws-grid-2">
         <div className="ws-stack">
           {mine.length ? mine.map((c) => (
@@ -39,12 +41,19 @@ export default async function Certificates() {
           )) : (
             <div className="ws-card">
               <EmptyState art="learner/certificate" title="How to earn your certificate">
-                Certificates are issued when your project is complete, to every member who confirmed contributions on at least {CERTIFICATE_MIN_MILESTONES} of 8 milestones.
+                Your project and your own contributions both count.
               </EmptyState>
+              <div className="ws-card-body">
+                <ChecklistProgress label="Certificate requirements" showLabels items={[
+                  { label: "Complete the project", detail: `${approved} of 8 milestones approved`, complete: project?.status === "complete" },
+                  { label: "Confirm contributions", detail: `${contributed} confirmed · ${CERTIFICATE_MIN_MILESTONES} required`, complete: contributed >= CERTIFICATE_MIN_MILESTONES },
+                ]} />
+              </div>
               {project && (
                 <div className="ws-card-body" style={{ borderTop: "1px solid var(--ws-border)", display: "grid", gap: 14 }}>
                   <div><div className="ws-row-between ws-small"><span>Milestones approved</span><span className="ws-muted">{approved} of 8</span></div><Meter value={approved} max={8} label="Milestones approved" /></div>
                   <div><div className="ws-row-between ws-small"><span>Your confirmed contributions</span><span className="ws-muted">{contributed} of {CERTIFICATE_MIN_MILESTONES} needed</span></div><Meter value={contributed} max={CERTIFICATE_MIN_MILESTONES} tone="red" label="Contributions confirmed" /></div>
+                  <ChecklistProgress label="Contribution by milestone" items={contributions} showLabels />
                   <p className="ws-small ws-muted">Supervisor: {personById(data, team!.supervisorId)?.name}. Keep confirming your contribution on every milestone.</p>
                 </div>
               )}

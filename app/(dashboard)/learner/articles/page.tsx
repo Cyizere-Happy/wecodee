@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { loadWorkspace } from "@/lib/workspace/data";
-import { formatDate } from "@/lib/workspace/rules";
 import { toggleSavedArticle } from "@/lib/workspace/actions";
 import { Badge, EmptyState, PageHeader } from "@/components/workspace/ui";
 import { AutoFilter } from "@/components/workspace/topic";
 import { ActionButton } from "@/components/workspace/forms";
 import { Icon } from "@/components/workspace/Icon";
+import { ArticleCover } from "@/components/workspace/learning/EditorialVisuals";
 
 export const metadata = { title: "Articles" };
 
@@ -25,7 +25,7 @@ export default async function Articles({ searchParams }: { searchParams: Promise
 
   return (
     <div className="ws-content">
-      <PageHeader eyebrow="Learn" title="Articles" lead="Five minutes or less. Save articles to find them again." />
+      <PageHeader eyebrow="Learn" title="Articles" />
       <AutoFilter>
         <label className="ws-search">
           <Icon name="search" size={13.5} />
@@ -42,23 +42,29 @@ export default async function Articles({ searchParams }: { searchParams: Promise
       </AutoFilter>
 
       {shown.length ? (
-        <div className="ws-card" style={{ overflow: "hidden" }}>
-          <ul className="ws-list">
+        <div className="ws-editorial-index">
+          <ul>
             {shown.map((a) => {
               const isSaved = data.savedArticles.includes(a.slug);
               return (
-                <li key={a.slug} style={{ alignItems: "flex-start", paddingBlock: 16 }}>
-                  <div className="ws-list-main" style={{ display: "grid", gap: 4 }}>
-                    <Link href={"/learner/articles/" + a.slug} style={{ fontWeight: 650, fontSize: ".8438rem", letterSpacing: "-.015em" }}>{a.title}</Link>
+                <li key={a.slug}>
+                  <div className="ws-editorial-entry">
+                    <Link href={"/learner/articles/" + a.slug}>
+                      <ArticleCover slug={a.slug} />
+                      <h2>{a.title}</h2>
+                    </Link>
                     <p>{a.excerpt}</p>
-                    <div className="ws-row ws-small ws-faint" style={{ gap: 12, marginTop: 2 }}>
-                      <span>{a.category}</span><span>{a.readingMin} min read</span><span>{formatDate(a.publishedAt)}</span>
-                      {isSaved && <Badge tone="green">Saved</Badge>}
+                    <div className="ws-editorial-meta">
+                      <div className="ws-row ws-small ws-muted" style={{ gap: 8 }}>
+                        <span>{a.category} · {a.readingMin} min read</span>
+                        {isSaved && <Badge tone="green">Saved</Badge>}
+                      </div>
+                      <ActionButton run={toggleSavedArticle.bind(null, a.slug)} variant="ghost" icon={isSaved ? "check" : "download"} tip={isSaved ? "Remove from saved" : "Save article"}>
+                        <span className="ws-sr">{isSaved ? "Remove from saved articles" : "Save article"}</span>
+                        <span className="ws-desktop-only" aria-hidden="true">{isSaved ? "Saved" : "Save"}</span>
+                      </ActionButton>
                     </div>
                   </div>
-                  <ActionButton run={toggleSavedArticle.bind(null, a.slug)} variant="ghost" icon={isSaved ? "check" : "download"} tip={isSaved ? "Remove from saved" : "Save article"}>
-                    <span className="ws-desktop-only">{isSaved ? "Saved" : "Save"}</span>
-                  </ActionButton>
                 </li>
               );
             })}

@@ -2,6 +2,7 @@ import { loadWorkspace } from "@/lib/workspace/data";
 import { saveTemplate } from "@/lib/workspace/actions";
 import { Card, Forbidden, PageHeader } from "@/components/workspace/ui";
 import { ActionForm, Field, Select, Submit, TextArea } from "@/components/workspace/forms";
+import { WorkflowRail } from "@/components/workspace/learning/WorkflowRail";
 
 export const metadata = { title: "Milestones" };
 
@@ -16,9 +17,17 @@ export default async function AdminMilestones() {
   return (
     <div className="ws-content ws-content-narrow">
       <PageHeader eyebrow="Admin" title="Milestones" lead="The eight steps every project follows. Changes apply to projects created afterwards; existing projects keep their checklist." />
+      <div className="ws-visual-context ws-template-path">
+        <h2>Project template for future teams</h2>
+        <WorkflowRail label="Default project sequence" steps={data.templates.map((milestone) => ({
+          label: milestone.name,
+          icon: "flag",
+          detail: <a href={`#template-${milestone.order}`} className="ws-link">{milestone.deliverable}</a>,
+        }))} />
+      </div>
       <div className="ws-stack">
         {data.templates.map((m) => (
-          <Card key={m.order} title={`M${m.order} · ${m.name}`}>
+          <div key={m.order} id={`template-${m.order}`} className="ws-visual-jump"><Card title={`M${m.order} · ${m.name}`}>
             <ActionForm action={saveTemplate}>
               <input type="hidden" name="order" value={m.order} />
               <div className="ws-form-row">
@@ -29,7 +38,7 @@ export default async function AdminMilestones() {
               <TextArea label="Supervisor checklist" name="checklist" rows={Math.max(3, m.checklist.length + 1)} defaultValue={m.checklist.join("\n")} help="One item per line. All items must be ticked to approve." />
               <div><Submit size="sm" variant="secondary">Save M{m.order}</Submit></div>
             </ActionForm>
-          </Card>
+          </Card></div>
         ))}
       </div>
     </div>

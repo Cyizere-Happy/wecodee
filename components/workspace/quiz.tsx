@@ -7,8 +7,20 @@ import type { Level } from "@/lib/workspace/types";
 import { Icon } from "./Icon";
 import { useToast } from "./forms";
 import { Mascot } from "./ui";
+import { QuizPractice } from "./learning/TopicExperiments";
 
 type Phase = { kind: "intro" } | { kind: "taking"; paper: QuizPaper } | { kind: "done"; score: number; level: Level; message: string };
+
+export function QuizThresholds({ score }: { score?: number }) {
+  const ranges = [
+    { range: "0–39", label: "Move down", min: 0, max: 39 },
+    { range: "40–74", label: "Confirm level", min: 40, max: 74 },
+    { range: "75–100", label: "Move up", min: 75, max: 100 },
+  ];
+  return <ul className="ws-quiz-thresholds" aria-label="Skill level adjustments where possible">
+    {ranges.map(({ range, label, min, max }) => <li key={range} aria-current={score !== undefined && score >= min && score <= max ? "true" : undefined}><strong>{range}</strong><span>{label}</span></li>)}
+  </ul>;
+}
 
 export function QuizRunner({ chosenLevel, retake }: { chosenLevel: Level; retake: boolean }) {
   const [phase, setPhase] = useState<Phase>({ kind: "intro" });
@@ -41,12 +53,13 @@ export function QuizRunner({ chosenLevel, retake }: { chosenLevel: Level; retake
           {[
             ["quiz", "10 to 15 multiple-choice and code-reading questions."],
             ["clock", `${QUIZ_MINUTES} minutes. The timer starts when you press Start and keeps running if you leave the page.`],
-            ["chart", "Below 40 drops a level, 40–74 confirms it, 75 or more raises it."],
             ["history", retake ? "This is your one retake." : "You can retake once, after 7 days, before you’re placed in a team."],
           ].map(([icon, text]) => (
             <li key={text} className="ws-row" style={{ alignItems: "flex-start" }}><Icon name={icon as "quiz"} size={14.5} className="ws-faint" /><span>{text}</span></li>
           ))}
         </ul>
+        <div><p className="ws-small ws-muted">How your score affects your level, where possible</p><QuizThresholds /></div>
+        <QuizPractice />
         <div>
           <button type="button" className="ws-btn ws-btn-primary ws-btn-lg" disabled={pending} onClick={() => start(async () => {
             const r = await startQuiz();
@@ -106,6 +119,13 @@ function QuizPaperView({ paper, onDone }: { paper: QuizPaper; onDone: (score: nu
         </span>
       </div>
       <div className="ws-meter" style={{ borderRadius: 0, height: 3 }} aria-hidden><span style={{ width: `${((index + 1) / paper.questions.length) * 100}%`, background: "var(--ws-red)" }} /></div>
+      <nav className="ws-quiz-steps" aria-label="Quiz questions">
+        {paper.questions.map(({ id }, i) => (
+          <button key={id} type="button" aria-label={`Question ${i + 1}, ${answers[id] ? "answered" : "unanswered"}`} aria-current={i === index ? "step" : undefined} data-answered={Boolean(answers[id])} onClick={() => setIndex(i)}>
+            {answers[id] && i !== index ? <Icon name="check" size={13} /> : i + 1}
+          </button>
+        ))}
+      </nav>
       <fieldset className="ws-fieldset ws-card-body" style={{ padding: 24 }} key={q.id}>
         <span className="ws-eyebrow">{q.topic}</span>
         <legend className="ws-h2" style={{ fontSize: ".9563rem", marginBottom: 14, float: "left", width: "100%" }}>

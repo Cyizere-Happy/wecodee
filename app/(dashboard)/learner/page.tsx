@@ -38,16 +38,16 @@ export default async function Overview() {
   const steps = [
     { label: "Verify your email", detail: "Done when you signed up.", icon: "check", done: true },
     { label: "Builder profile", detail: "Add your contact details and skills.", icon: "user", done: profileDone },
-    { label: "Skills quiz", detail: "Set your readiness level for team matching.", icon: "quiz", done: quizDone },
+    { label: "Skills quiz", detail: "Find your skill level for team matching.", icon: "quiz", done: quizDone },
     { label: "Team placement", detail: data.profile.optedIn ? "Teams form from the placement pool." : "You opted out of team placement.", icon: "users", done: Boolean(team) },
   ] as const;
   const nextStep = steps.findIndex((step) => !step.done);
   type NextAction = { art: ArtName; title: string; detail: string; href: string; label: string };
   let next: NextAction;
   if (!profileDone) {
-    next = { art: "learner/welcome", title: "Set up your builder profile", detail: "Your contact details and skills help WeCodee prepare you for the readiness quiz and team placement.", href: "/settings", label: "Complete profile" };
+    next = { art: "learner/welcome", title: "Set up your builder profile", detail: "Add your skills, contact details, and availability.", href: "/settings", label: "Complete profile" };
   } else if (!quizDone) {
-    next = { art: "learner/quiz", title: "Find your starting point", detail: "The skills quiz takes 20 minutes. WeCodee uses your result to match teammates by readiness.", href: "/learner/quiz", label: "Open skills quiz" };
+    next = { art: "learner/quiz", title: "Find your starting point", detail: "Your 20-minute quiz helps match you with teammates at a similar skill level.", href: "/learner/quiz", label: "Open skills quiz" };
   } else if (!team) {
     next = data.profile.optedIn
       ? { art: "learner/team", title: "You’re in the placement pool", detail: "You can keep learning while your team is being formed.", href: "/learner/team", label: "See placement status" }
@@ -73,7 +73,6 @@ export default async function Overview() {
     <div className="ws-content">
       <PageHeader
         title={<>Good to see you, {first}<span style={{ color: "var(--ws-red)" }}>.</span></>}
-        lead={team ? "Check in on your team, project, and learning." : "Here’s where to pick up your WeCodee journey."}
         actions={<SearchLauncher />}
       />
 

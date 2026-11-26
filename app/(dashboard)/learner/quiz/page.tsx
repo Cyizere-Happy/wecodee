@@ -4,7 +4,9 @@ import { myTeam, profileComplete } from "@/lib/workspace/selectors";
 import { QUIZ_RETAKE_DAYS, formatDate, nowMs } from "@/lib/workspace/rules";
 import { Badge, Card, EmptyState, Meter, PageHeader } from "@/components/workspace/ui";
 import { MascotGuide } from "@/components/workspace/Guidance";
-import { QuizRunner } from "@/components/workspace/quiz";
+import { QuizRunner, QuizThresholds } from "@/components/workspace/quiz";
+import { WorkflowRail } from "@/components/workspace/learning/WorkflowRail";
+import { QuizPractice } from "@/components/workspace/learning/TopicExperiments";
 
 export const metadata = { title: "Skills quiz" };
 
@@ -20,11 +22,17 @@ export default async function Quiz() {
     return (
       <div className="ws-content ws-content-narrow">
         <PageHeader eyebrow="Learn" title="Skills quiz" />
+        <div className="ws-visual-context"><WorkflowRail label="Team placement path" steps={[
+          { label: "Complete profile", icon: "user", state: "current" },
+          { label: "Take the skills quiz", icon: "quiz", state: "upcoming" },
+          { label: "Join the placement pool", icon: "users", state: "upcoming" },
+        ]} /></div>
         <div className="ws-card">
           <EmptyState still="door" title="One step before the quiz" actions={<Link href="/settings" className="ws-btn ws-btn-primary">Complete your profile<span className="ws-arrow" aria-hidden>→</span></Link>}>
             Tell us your experience level, skills and a few readiness questions first. The quiz matches the level you choose.
           </EmptyState>
         </div>
+        <div className="ws-section"><QuizPractice /></div>
       </div>
     );
   }
@@ -44,6 +52,7 @@ export default async function Quiz() {
                 <p className="ws-muted ws-small">Your score</p>
                 <p style={{ fontSize: "2.25rem", fontWeight: 650, letterSpacing: "-.05em", lineHeight: 1 }}>{quiz.score}<span className="ws-muted" style={{ fontSize: ".9rem", letterSpacing: 0 }}> / 100</span></p>
                 <Meter value={quiz.score} tone="red" label="Quiz score" />
+                <QuizThresholds score={quiz.score} />
                 <p>
                   You chose <strong>{quiz.chosenLevel}</strong>. {moved ? <>Your score {quiz.score >= 75 ? "raised" : "moved"} you to <strong>{quiz.skillLevel}</strong>.</> : <>Your score confirmed it.</>}
                 </p>
